@@ -95,7 +95,6 @@ static int decode_live(unsigned int cpu)
 int main (int argc, char **argv)
 {
 	unsigned int cpu, mode = 0;
-	int i;
 
 	if (argc < 2)
 		cpu = 0;

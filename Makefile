@@ -24,24 +24,24 @@
 
 # Set the following to `true' to make a unstripped, unoptimized
 # binary. Leave this set to `false' for production use.
-DEBUG =		false
+DEBUG ?=	false
 
 # make the build silent. Set this to something else to make it noisy again.
-V =		false
+V ?=		false
 
 # Internationalization support (output in different languages).
 # Requires gettext.
-NLS =		true
+NLS ?=		true
 
 # Use the sysfs-based interface which is included in all 2.6 kernels
 # built with cpufreq support
-SYSFS =		true
+SYSFS ?=	true
 
 # Use the proc-based interface which is used in the 2.4 patch for cpufreq
-PROC =		true
+PROC ?=		true
 
 # Prefix to the directories we're installing to
-DESTDIR =	/usr
+DESTDIR ?=	
 
 # --- CONFIGURATION END ---
 
@@ -50,7 +50,7 @@ DESTDIR =	/usr
 # Package-related definitions. Distributions can modify the version
 # and _should_ modify the PACKAGE_BUGREPORT definition
 
-VERSION =			0.5-pre1
+VERSION =			0.5-pre2
 LIB_VERSION =			0:0:0
 PACKAGE =			cpufrequtils
 PACKAGE_BUGREPORT =		linux@brodo.de
@@ -61,11 +61,11 @@ LANGUAGES = 			de fr it
 # do not need to be changed. Please note that DESTDIR is
 # added in front of any of them
 
-bindir =	/bin
-mandir =	/man
-includedir =	/include
-libdir =	/lib
-localedir =	/share/locale
+bindir ?=	/usr/bin
+mandir ?=	/usr/man
+includedir ?=	/usr/include
+libdir ?=	/usr/lib
+localedir ?=	/usr/share/locale
 
 # Toolchain: what tools do we use, and what options do they need:
 
@@ -212,7 +212,7 @@ update-gmo: po/$(PACKAGE).pot
 			echo "msgmerge for $$HLANG failed!"; \
 			rm -f po/$$HLANG.new.po; \
 		fi; \
-		/usr/bin/gmsgfmt --statistics -o po/$$HLANG.gmo po/$$HLANG.po; \
+		/usr/bin/msgfmt --statistics -o po/$$HLANG.gmo po/$$HLANG.po; \
 	done;
 
 clean:
@@ -243,7 +243,7 @@ install-man:
 install-gmo:
 	$(INSTALL) -d $(DESTDIR)${localedir}
 	for HLANG in $(LANGUAGES); do \
-		echo '$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo;' \
+		echo '$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo'; \
 		$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo; \
 	done;
 
