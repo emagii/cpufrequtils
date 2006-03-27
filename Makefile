@@ -125,16 +125,16 @@ LIB_HEADERS = 	lib/cpufreq.h lib/interfaces.h
 LIB_OBJS = 	lib/cpufreq.c lib/proc.c lib/sysfs.c
 LIB_PARTS = 	lib/cpufreq.lo
 
-CFLAGS :=	-pipe
+CFLAGDEF +=	-pipe
 
 ifeq ($(strip $(PROC)),true)
 	LIB_PARTS += lib/proc.lo
-	CFLAGS += -DINTERFACE_PROC
+	CFLAGDEF += -DINTERFACE_PROC
 endif
 
 ifeq ($(strip $(SYSFS)),true)
 	LIB_PARTS += lib/sysfs.lo
-	CFLAGS += -DINTERFACE_SYSFS
+	CFLAGDEF += -DINTERFACE_SYSFS
 	LDFLAGS = -lsysfs
 endif
 
@@ -158,10 +158,10 @@ endif
 
 # if DEBUG is enabled, then we do not strip or optimize
 ifeq ($(strip $(DEBUG)),true)
-	CFLAGS  += -O1 -g -DDEBUG
+	CFLAGDEF  += -O1 -g -DDEBUG
 	STRIPCMD = /bin/true -Since_we_are_debugging
 else
-	CFLAGS  += $(OPTIMIZATION) -fomit-frame-pointer
+	CFLAGDEF  += $(OPTIMIZATION) -fomit-frame-pointer
 	STRIPCMD = $(STRIP) -s --remove-section=.note --remove-section=.comment
 endif
 
@@ -177,7 +177,7 @@ ccdv:
 	@$(HOSTCC) -O1 build/ccdv.c -o build/ccdv
 
 %.lo: $(LIB_OBJS) $(LIB_HEADERS)
-	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=compile $(CC) $(CFLAGS) -o $@ -c $*.c
+	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=compile $(CC) $(CFLAGDEF) $(CFLAGS) -o $@ -c $*.c
 
 libcpufreq.la: $(LIB_OBJS) $(LIB_HEADERS) $(LIB_PARTS) Makefile
 	@if [ $(strip $(SYSFS)) != true -a $(strip $(PROC)) != true ]; then \
