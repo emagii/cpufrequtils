@@ -185,14 +185,14 @@ libcpufreq.la: $(LIB_OBJS) $(LIB_HEADERS) $(LIB_PARTS) Makefile
 		exit -1; \
 	fi;
 	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=link $(CC) $(CFLAGDEF) $(CFLAGS) $(LDFLAGS) -o libcpufreq.la -rpath \
-		$(DESTDIR)${libdir} -version-info $(LIB_VERSION) $(LIB_PARTS)
+		${libdir} -version-info $(LIB_VERSION) $(LIB_PARTS)
 
 libcpufreq: libcpufreq.la
 
 cpufreq-%: $(UTIL_OBJS)
 	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I. -I./lib/ -c -o utils/$@.o utils/$*.c
 	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I./lib/ -L. -L./.libs/ -lcpufreq -o $@ utils/$@.o
-	$(STRIPCMD) $@
+	$(QUIET) $(STRIPCMD) $@
 
 utils: cpufreq-info cpufreq-set
 
