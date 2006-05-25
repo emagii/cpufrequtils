@@ -508,11 +508,11 @@ int sysfs_set_policy(unsigned int cpu, struct cpufreq_policy *policy)
 	snprintf(min, SYSFS_PATH_MAX, "%lu", policy->min);
 	snprintf(max, SYSFS_PATH_MAX, "%lu", policy->max);
 
-	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MIN_FREQ, min, strlen(min));
+	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
 	if (ret)
 		return ret;
 
-	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
+	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MIN_FREQ, min, strlen(min));
 	if (ret)
 		return ret;
 
