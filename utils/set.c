@@ -279,7 +279,7 @@ int main(int argc, char **argv) {
 		struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
 		struct cpufreq_policy new_pol;
 		if (!cur_pol) {
-			printf(gettext ("wrong, unknown or unhandled CPU?"));
+			printf(gettext ("wrong, unknown or unhandled CPU?\n"));
 			return -EINVAL;
 		}
 

@@ -337,8 +337,8 @@ msgstr ""
 
 #: utils/set.c:282
 #, c-format
-msgid "wrong, unknown or unhandled CPU?"
-msgstr "CPU errata, sconosciuta o non gestita?"
+msgid "wrong, unknown or unhandled CPU?\n"
+msgstr "CPU errata, sconosciuta o non gestita?\n"
 
 #: utils/set.c:306
 #, c-format

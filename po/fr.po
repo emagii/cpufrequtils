@@ -329,8 +329,8 @@ msgstr ""
 
 #: utils/set.c:282
 #, c-format
-msgid "wrong, unknown or unhandled CPU?"
-msgstr "CPU inconnu ou non supporté ?"
+msgid "wrong, unknown or unhandled CPU?\n"
+msgstr "CPU inconnu ou non supporté ?\n"
 
 #: utils/set.c:306
 #, c-format
