@@ -50,7 +50,7 @@ DESTDIR ?=
 # Package-related definitions. Distributions can modify the version
 # and _should_ modify the PACKAGE_BUGREPORT definition
 
-VERSION =			001
+VERSION =			002
 LIB_VERSION =			0:0:0
 PACKAGE =			cpufrequtils
 PACKAGE_BUGREPORT =		linux@brodo.de
