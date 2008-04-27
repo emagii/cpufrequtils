@@ -54,7 +54,7 @@ VERSION =			002
 LIB_VERSION =			0:0:0
 PACKAGE =			cpufrequtils
 PACKAGE_BUGREPORT =		linux@brodo.de
-LANGUAGES = 			de fr it
+LANGUAGES = 			de fr it cs
 
 
 # Directory definitions. These are default and most probably
