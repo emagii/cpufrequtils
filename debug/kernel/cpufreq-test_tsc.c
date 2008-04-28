@@ -59,9 +59,28 @@ static int __init cpufreq_test_tsc(void)
 	u64 now_tsc, then_tsc, diff_tsc;
 	int i;
 
-	pm_tmr_ioport = acpi_fadt.xpm_tmr_blk.address;
-	if (!pm_tmr_ioport)
-		return -EINVAL;
+	/* the following code snipped is copied from arch/x86/kernel/acpi/boot.c
+	   of Linux v2.6.25. */
+
+	/* detect the location of the ACPI PM Timer */
+	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID) {
+		/* FADT rev. 2 */
+		if (acpi_gbl_FADT.xpm_timer_block.space_id !=
+		    ACPI_ADR_SPACE_SYSTEM_IO)
+			return 0;
+
+		pm_tmr_ioport = acpi_gbl_FADT.xpm_timer_block.address;
+		/*
+		 * "X" fields are optional extensions to the original V1.0
+		 * fields, so we must selectively expand V1.0 fields if the
+		 * corresponding X field is zero.
+	 	 */
+		if (!pm_tmr_ioport)
+			pm_tmr_ioport = acpi_gbl_FADT.pm_timer_block;
+	} else {
+		/* FADT rev. 1 */
+		pm_tmr_ioport = acpi_gbl_FADT.pm_timer_block;
+	}
 
 	printk(KERN_DEBUG "start--> \n");
 	then = read_pmtmr();

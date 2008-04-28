@@ -1,35 +1,23 @@
 obj-m	:=
-MODULES :=
 
 KDIR	:= /lib/modules/$(shell uname -r)/build
 PWD		:= $(shell pwd)
 KMISC   := /lib/modules/$(shell uname -r)/cpufrequtils/
 
-ifeq ("$(CONFIG_ACPI_PROCESSOR)", "y")
-  obj-m   += cpufreq-acpi_pdump.o 
-  MODULES += cpufreq-acpi_pdump
-endif
-
-ifeq ("$(CONFIG_ACPI_PROCESSOR)", "m")
-  obj-m   += cpufreq-acpi_pdump.o 
-  MODULES := cpufreq-acpi_pdump
-endif
-
 ifeq ("$(CONFIG_X86_TSC)", "y")
   obj-m	 += cpufreq-test_tsc.o
-  MODULES += cpufreq-test_tsc
 endif
 
 default:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	$(MAKE) -C $(KDIR) M=$(PWD)
 
 clean:
 	- rm -rf *.o *.ko .tmp-versions .*.cmd .*.mod.* *.mod.c
-	- rm -rf .tmp_versions*
+	- rm -rf .tmp_versions* Module.symvers modules.order
 
 install: default
 	install -d $(KMISC)
-	install -m 644 -c $(addsuffix .ko,$(MODULES)) $(KMISC)
+	install -m 644 -c *.ko $(KMISC)
 	/sbin/depmod -a
 
 all:	default
