@@ -53,7 +53,7 @@ DESTDIR ?=
 VERSION =			002
 LIB_VERSION =			0:0:0
 PACKAGE =			cpufrequtils
-PACKAGE_BUGREPORT =		linux@brodo.de
+PACKAGE_BUGREPORT =		cpufreq@lists.linux.org.uk
 LANGUAGES = 			de fr it cs
 
 
