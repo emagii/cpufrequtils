@@ -54,7 +54,7 @@ VERSION =			002
 LIB_VERSION =			0:0:0
 PACKAGE =			cpufrequtils
 PACKAGE_BUGREPORT =		cpufreq@lists.linux.org.uk
-LANGUAGES = 			de fr it cs
+LANGUAGES = 			de fr it cs pt
 
 
 # Directory definitions. These are default and most probably
