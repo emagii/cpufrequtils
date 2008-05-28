@@ -48,21 +48,20 @@ human\-readable output for the \-f and \-w parameters.
 Prints out the help screen.
 .SH "REMARKS"
 .LP 
-You cant specify more than one of the output specific options \-o \-e \-a \-g \-p \-d \-l \-w \-f.
-.br 
+You can't specify more than one of the output specific options \-o \-e \-a \-g \-p \-d \-l \-w \-f.
+.LP 
 You also can't specify the \-o option combined with the \-c option.
 .SH "FILES"
-.LP 
-\fI/sys/devices/system/cpu/cpu*/cpufreq/\fP 
-.br 
+.nf 
+\fI/sys/devices/system/cpu/cpu*/cpufreq/\fP  
 \fI/proc/cpufreq\fP (deprecated) 
-.br 
-\fI/proc/sys/cpu/\fP (deprecated) 
+\fI/proc/sys/cpu/\fP (deprecated)
+.fi 
 .SH "AUTHORS"
-.LP 
-Dominik Brodowski <linux@brodo.de> \- author
-.br 
+.nf
+Dominik Brodowski <linux@brodo.de> \- author 
 Mattia Dongili<malattia@gmail.com> \- first autolibtoolization
+.fi
 .SH "SEE ALSO"
 .LP 
 cpufreq\-set(1)

@@ -31,22 +31,21 @@ Prints out the help screen.
 .SH "REMARKS"
 .LP 
 Omitting the \-c or \-\-cpu argument is equivalent to setting it to zero.
-.br 
+.LP 
 The \-f FREQ, \-\-freq FREQ parameter cannot be combined with any other parameter except the \-c CPU, \-\-cpu CPU parameter.
-.br 
+.LP 
 FREQuencies can be passed in Hz, kHz (default), MHz, GHz, or THz by postfixing the value with the wanted unit name, without any space (FREQuency in kHz =^ Hz * 0.001 =^ MHz * 1000 =^ GHz * 1000000).
-.SH "FILES"
-.LP 
-\fI/sys/devices/system/cpu/cpu*/cpufreq/\fP 
-.br 
+.SH "FILES" 
+.nf
+\fI/sys/devices/system/cpu/cpu*/cpufreq/\fP  
 \fI/proc/cpufreq\fP (deprecated) 
-.br 
-\fI/proc/sys/cpu/\fP (deprecated) 
+\fI/proc/sys/cpu/\fP (deprecated)
+.fi 
 .SH "AUTHORS"
-.LP 
-Dominik Brodowski <linux@brodo.de> \- author
-.br 
+.nf 
+Dominik Brodowski <linux@brodo.de> \- author 
 Mattia Dongili<malattia@gmail.com> \- first autolibtoolization
+.fi
 .SH "SEE ALSO"
 .LP 
 cpufreq\-info(1)
