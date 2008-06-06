@@ -218,8 +218,11 @@ struct cpufreq_policy * sysfs_get_policy(unsigned int cpu) {
 	}
 	policy->min = sysfs_get_one_value(cpu, SCALING_MIN_FREQ);
 	policy->max = sysfs_get_one_value(cpu, SCALING_MAX_FREQ);
-	if ((!policy->min) || (!policy->max))
+	if ((!policy->min) || (!policy->max)) {
+		free(policy->governor);
+		free(policy);
 		return NULL;
+	}
 
 	return policy;
 }
