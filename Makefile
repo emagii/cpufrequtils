@@ -135,7 +135,6 @@ endif
 ifeq ($(strip $(SYSFS)),true)
 	LIB_PARTS += lib/sysfs.lo
 	CFLAGDEF += -DINTERFACE_SYSFS
-	LDFLAGS = -lsysfs
 endif
 
 ifeq ($(strip $(NLS)),true)

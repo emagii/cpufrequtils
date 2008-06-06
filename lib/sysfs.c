@@ -9,12 +9,70 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-
-#include <sysfs/libsysfs.h>
+#include <limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "cpufreq.h"
 
 #define PATH_TO_CPU "/sys/devices/system/cpu/"
+#define MAX_LINE_LEN 255
+#define SYSFS_PATH_MAX 255
+
+/* helper function to read file from /sys into given buffer */
+/* fname is a relative path under "cpuX/cpufreq" dir */
+unsigned int sysfs_read_file(unsigned int cpu, const char *fname, char *buf, size_t buflen)
+{
+	char path[SYSFS_PATH_MAX];
+	int fd;
+	size_t numread;
+
+	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s", 
+			 cpu, fname);
+
+	if ( ( fd = open(path, O_RDONLY) ) == -1 )
+		return 0;
+
+	numread = read(fd, buf, buflen - 1);
+	if ( numread < 1 )
+	{
+		close(fd);
+		return 0;
+	}
+
+	buf[numread] = '\0';
+	close(fd);
+
+	return numread;
+}
+
+/* helper function to write a new value to a /sys file */
+/* fname is a relative path under "cpuX/cpufreq" dir */
+unsigned int sysfs_write_file(unsigned int cpu, const char *fname, const char *value, size_t len)
+{
+	char path[SYSFS_PATH_MAX];
+	int fd;
+	size_t numwrite;
+
+	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s", 
+			 cpu, fname);
+
+	if ( ( fd = open(path, O_WRONLY) ) == -1 )
+		return 0;
+
+	numwrite = write(fd, value, len);
+	if ( numwrite < 1 )
+	{
+		close(fd);
+		return 0;
+	}
+
+	close(fd);
+
+	return numwrite;
+}
 
 /* read access to files which contain one numeric value */
 
@@ -40,35 +98,23 @@ static const char *value_files[MAX_VALUE_FILES] = {
 
 static unsigned long sysfs_get_one_value(unsigned int cpu, unsigned int which)
 {
-	char file[SYSFS_PATH_MAX];
-	struct sysfs_attribute *attr;
  	unsigned long value;
+	unsigned int len;
+	char linebuf[MAX_LINE_LEN];
 	char *endp;
 
 	if ( which >= MAX_VALUE_FILES )
 		return 0;
 
-	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/cpufreq/%s", 
-			 cpu, value_files[which]);
-
-	if ( ( attr = sysfs_open_attribute(file) ) == NULL )
-		return 0;
-
-	if ( sysfs_read_attribute(attr) || attr->value == NULL || attr->len == 0 )
+	if ( ( len = sysfs_read_file(cpu, value_files[which], linebuf, sizeof(linebuf))) == 0 )
 	{
-		sysfs_close_attribute(attr);
 		return 0;
 	}
 
-	value = strtoul(attr->value, &endp, 0);
+	value = strtoul(linebuf, &endp, 0);
 
-	if ( endp == attr->value ||  errno == ERANGE)
-	{
-		sysfs_close_attribute(attr);
+	if ( endp == linebuf || errno == ERANGE )
 		return 0;
-	}
-
-	sysfs_close_attribute(attr);
 
 	return value;
 }
@@ -89,33 +135,23 @@ static const char *string_files[MAX_STRING_FILES] = {
 
 static char * sysfs_get_one_string(unsigned int cpu, unsigned int which)
 {
-	char file[SYSFS_PATH_MAX];
-	struct sysfs_attribute *attr;
-	char * result;
+	char linebuf[MAX_LINE_LEN];
+	char *result;
+	unsigned int len;
 
 	if (which >= MAX_STRING_FILES)
 		return NULL;
 
-	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/cpufreq/%s", 
-			 cpu, string_files[which]);
-
-	if ( ( attr = sysfs_open_attribute(file) ) == NULL )
-		return NULL;
-
-	if ( sysfs_read_attribute(attr) || attr->value == NULL ||
-		 attr->len >= SYSFS_PATH_MAX ||
-		 ( result = malloc(attr->len + 1) ) == NULL )
+	if ( ( len = sysfs_read_file(cpu, string_files[which], linebuf, sizeof(linebuf))) == 0 )
 	{
-		sysfs_close_attribute(attr);
 		return NULL;
 	}
 
-	memcpy(result, attr->value, attr->len);
-	result[attr->len] = '\0';
-	if (result[attr->len - 1] == '\n')
-		result[attr->len - 1] = '\0';
+	if ( ( result = strdup(linebuf) ) == NULL )
+		return NULL;
 
-	sysfs_close_attribute(attr);
+	if (result[strlen(result) - 1] == '\n')
+		result[strlen(result) - 1] = '\0';
 
 	return result;
 }
@@ -140,35 +176,27 @@ static const char *write_files[MAX_VALUE_FILES] = {
 static int sysfs_write_one_value(unsigned int cpu, unsigned int which,
 				 const char *new_value, size_t len)
 {
-	int ret;
-	char file[SYSFS_PATH_MAX];
-	struct sysfs_attribute *attr;
-
 	if (which >= MAX_WRITE_FILES)
 		return 0;
 
-	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/cpufreq/%s", 
-			 cpu, write_files[which]);
-
-	attr = sysfs_open_attribute(file);
-	if (!attr)
+	if ( sysfs_write_file(cpu, write_files[which], new_value, len) != len )
 		return -ENODEV;
 
-	ret = sysfs_write_attribute(attr, new_value, len);
-
-	sysfs_close_attribute(attr);
-
-	return ret;
+	return 0;
 };
 
 
 int sysfs_cpu_exists(unsigned int cpu)
 {
 	char file[SYSFS_PATH_MAX];
+	struct stat statbuf;
 
 	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/", cpu);
 
-	return sysfs_path_is_dir(file);
+	if ( stat(file, &statbuf) != 0 )
+		return 1;
+
+	return 1 - S_ISDIR(statbuf.st_mode);
 }
 
 
@@ -230,26 +258,19 @@ struct cpufreq_policy * sysfs_get_policy(unsigned int cpu) {
 struct cpufreq_available_governors * sysfs_get_available_governors(unsigned int cpu) {
 	struct cpufreq_available_governors *first = NULL;
 	struct cpufreq_available_governors *current = NULL;
-	char file[SYSFS_PATH_MAX];
-	struct sysfs_attribute *attr;
+	char linebuf[MAX_LINE_LEN];
 	unsigned int pos, i;
+	unsigned int len;
 
-	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/cpufreq/scaling_available_governors", cpu);
-
-	if ( ( attr = sysfs_open_attribute(file) ) == NULL )
-		return NULL;
-
-	if ( sysfs_read_attribute(attr) || attr->value == NULL )
+	if ( ( len = sysfs_read_file(cpu, "scaling_available_governors", linebuf, sizeof(linebuf))) == 0 )
 	{
-		sysfs_close_attribute(attr);
 		return NULL;
 	}
 
 	pos = 0;
-	for ( i = 0; i < attr->len; i++ )
+	for ( i = 0; i < len; i++ )
 	{
-		if ( i == attr->len || attr->value[i] == ' ' ||
-			 attr->value[i] == '\0' || attr->value[i] == '\n' )
+		if ( linebuf[i] == ' ' || linebuf[i] == '\n' )
 		{
 			if ( i - pos < 2 )
 				continue;
@@ -271,13 +292,12 @@ struct cpufreq_available_governors * sysfs_get_available_governors(unsigned int 
 			if ( ! current->governor )
 				goto error_out;
 
-			memcpy( current->governor, attr->value + pos, i - pos);
+			memcpy( current->governor, linebuf + pos, i - pos);
 			current->governor[i - pos] = '\0';
 			pos = i + 1;
 		}
 	}
 
-	sysfs_close_attribute(attr);
 	return first;
 
  error_out:
@@ -288,7 +308,6 @@ struct cpufreq_available_governors * sysfs_get_available_governors(unsigned int 
 		free( first );
 		first = current;
 	}
-	sysfs_close_attribute(attr);
 	return NULL;
 }
 
@@ -296,27 +315,20 @@ struct cpufreq_available_governors * sysfs_get_available_governors(unsigned int 
 struct cpufreq_available_frequencies * sysfs_get_available_frequencies(unsigned int cpu) {
 	struct cpufreq_available_frequencies *first = NULL;
 	struct cpufreq_available_frequencies *current = NULL;
-	char file[SYSFS_PATH_MAX];
-	struct sysfs_attribute *attr;
 	char one_value[SYSFS_PATH_MAX];
+	char linebuf[MAX_LINE_LEN];
 	unsigned int pos, i;
+	unsigned int len;
 
-	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/cpufreq/scaling_available_frequencies", cpu);
-
-	if ( ( attr = sysfs_open_attribute(file) ) == NULL )
-		return NULL;
-
-	if ( sysfs_read_attribute(attr) || attr->value == NULL )
+	if ( ( len = sysfs_read_file(cpu, "scaling_available_frequencies", linebuf, sizeof(linebuf))) == 0 )
 	{
-		sysfs_close_attribute(attr);
 		return NULL;
 	}
 
 	pos = 0;
-	for ( i = 0; i < attr->len; i++ )
+	for ( i = 0; i < len; i++ )
 	{
-		if ( i == attr->len || attr->value[i] == ' ' ||
-			 attr->value[i] == '\0' || attr->value[i] == '\n' )
+		if ( linebuf[i] == ' ' || linebuf[i] == '\n' )
 		{
 			if ( i - pos < 2 )
 				continue;
@@ -336,7 +348,7 @@ struct cpufreq_available_frequencies * sysfs_get_available_frequencies(unsigned 
 			current->first = first;
 			current->next = NULL;
 
-			memcpy(one_value, attr->value + pos, i - pos);
+			memcpy(one_value, linebuf + pos, i - pos);
 			one_value[i - pos] = '\0';
 			if ( sscanf(one_value, "%lu", &current->frequency) != 1 )
 				goto error_out;
@@ -345,7 +357,6 @@ struct cpufreq_available_frequencies * sysfs_get_available_frequencies(unsigned 
 		}
 	}
 
-	sysfs_close_attribute(attr);
 	return first;
 
  error_out:
@@ -354,34 +365,26 @@ struct cpufreq_available_frequencies * sysfs_get_available_frequencies(unsigned 
 		free(first);
 		first = current;
 	}
-	sysfs_close_attribute(attr);
 	return NULL;
 }
 
 struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 	struct cpufreq_affected_cpus *first = NULL;
 	struct cpufreq_affected_cpus *current = NULL;
-	char file[SYSFS_PATH_MAX];
-	struct sysfs_attribute *attr;
 	char one_value[SYSFS_PATH_MAX];
+	char linebuf[MAX_LINE_LEN];
 	unsigned int pos, i;
+	unsigned int len;
 
-	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/cpufreq/affected_cpus", cpu);
-
-	if ( ( attr = sysfs_open_attribute(file) ) == NULL )
-		return NULL;
-
-	if ( sysfs_read_attribute(attr) || attr->value == NULL )
+	if ( ( len = sysfs_read_file(cpu, "affected_cpus", linebuf, sizeof(linebuf))) == 0 )
 	{
-		sysfs_close_attribute(attr);
 		return NULL;
 	}
 
 	pos = 0;
-	for ( i = 0; i < attr->len; i++ )
+	for ( i = 0; i < len; i++ )
 	{
-		if ( i == attr->len  || attr->value[i] == ' ' ||
-			 attr->value[i] == '\0' || attr->value[i] == '\n' )
+		if ( i == len || linebuf[i] == ' ' || linebuf[i] == '\n' )
 		{
 			if ( i - pos  < 1 )
 				continue;
@@ -401,7 +404,7 @@ struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 			current->first = first;
 			current->next = NULL;
 
-			memcpy(one_value, attr->value + pos, i - pos);
+			memcpy(one_value, linebuf + pos, i - pos);
 			one_value[i - pos] = '\0';
 
 			if ( sscanf(one_value, "%u", &current->cpu) != 1 )
@@ -411,7 +414,6 @@ struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 		}
 	}
 
-	sysfs_close_attribute(attr);
 	return first;
 
  error_out:
@@ -420,7 +422,6 @@ struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 		free(first);
 		first = current;
 	}
-	sysfs_close_attribute(attr);
 	return NULL;
 }
 
