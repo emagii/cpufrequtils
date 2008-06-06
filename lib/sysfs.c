@@ -83,6 +83,7 @@ enum {
 	SCALING_CUR_FREQ,
 	SCALING_MIN_FREQ,
 	SCALING_MAX_FREQ,
+	STATS_NUM_TRANSITIONS,
 	MAX_VALUE_FILES
 };
 
@@ -93,6 +94,7 @@ static const char *value_files[MAX_VALUE_FILES] = {
 	[SCALING_CUR_FREQ] = "scaling_cur_freq",
 	[SCALING_MIN_FREQ] = "scaling_min_freq",
 	[SCALING_MAX_FREQ] = "scaling_max_freq",
+	[STATS_NUM_TRANSITIONS] = "stats/total_trans"
 };
 
 
@@ -423,6 +425,67 @@ struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 		first = current;
 	}
 	return NULL;
+}
+
+struct cpufreq_stats * sysfs_get_stats(unsigned int cpu, unsigned long *total_time) {
+	struct cpufreq_stats *first = NULL;
+	struct cpufreq_stats *current = NULL;
+	char one_value[SYSFS_PATH_MAX];
+	char linebuf[MAX_LINE_LEN];
+	unsigned int pos, i;
+	unsigned int len;
+
+	if ( ( len = sysfs_read_file(cpu, "stats/time_in_state", linebuf, sizeof(linebuf))) == 0 )
+		return NULL;
+
+	*total_time = 0;
+	pos = 0;
+	for ( i = 0; i < len; i++ )
+	{
+		if ( i == strlen(linebuf) || linebuf[i] == '\n' )
+		{
+			if ( i - pos < 2 )
+				continue;
+			if ( (i - pos) >= SYSFS_PATH_MAX )
+				goto error_out;
+			if ( current ) {
+				current->next = malloc(sizeof *current );
+				if ( ! current->next )
+					goto error_out;
+				current = current->next;
+			} else {
+				first = malloc(sizeof *first );
+				if ( ! first )
+					goto error_out;
+				current = first;
+			}
+			current->first = first;
+			current->next = NULL;
+
+			memcpy(one_value, linebuf + pos, i - pos);
+			one_value[i - pos] = '\0';
+			if ( sscanf(one_value, "%lu %llu", &current->frequency, &current->time_in_state) != 2 )
+				goto error_out;
+
+			*total_time = *total_time + current->time_in_state;
+			pos = i + 1;
+		}
+	}
+
+	return first;
+
+ error_out:
+	while ( first ) {
+		current = first->next;
+		free(first);
+		first = current;
+	}
+	return NULL;
+}
+
+unsigned long sysfs_get_transitions(unsigned int cpu)
+{
+	return sysfs_get_one_value(cpu, STATS_NUM_TRANSITIONS);
 }
 
 static int verify_gov(char *new_gov, char *passed_gov)

@@ -205,3 +205,30 @@ int cpufreq_set_frequency(unsigned int cpu, unsigned long target_frequency) {
 		ret = proc_set_frequency(cpu, target_frequency);
 	return (ret);
 }
+
+struct cpufreq_stats * cpufreq_get_stats(unsigned int cpu, unsigned long long *total_time) {
+	struct cpufreq_stats *ret;
+
+	ret = sysfs_get_stats(cpu, total_time);
+	return (ret);
+}
+
+void cpufreq_put_stats(struct cpufreq_stats *any) {
+	struct cpufreq_stats *tmp, *next;
+
+	if (!any)
+		return;
+
+	tmp = any->first;
+	while (tmp) {
+		next = tmp->next;
+		free(tmp);
+		tmp = next;
+	}
+}
+
+unsigned long cpufreq_get_transitions(unsigned int cpu) {
+	unsigned long ret = sysfs_get_transitions(cpu);
+
+	return (ret);
+}

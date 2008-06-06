@@ -118,8 +118,11 @@ static void debug_output_one(unsigned int cpu)
 	struct cpufreq_affected_cpus *cpus;
 	struct cpufreq_available_frequencies *freqs;
 	unsigned long min, max, freq_kernel, freq_hardware;
+	unsigned long total_trans;
+	unsigned long long total_time;
 	struct cpufreq_policy *policy;
 	struct cpufreq_available_governors * governors;
+	struct cpufreq_stats *stats;
 
 	if (cpufreq_cpu_exists(cpu)) {
 		printf(gettext ("couldn't analyze CPU %d as it doesn't seem to be present\n"), cpu);
@@ -206,6 +209,21 @@ static void debug_output_one(unsigned int cpu)
 			print_speed(freq_kernel);
 		printf(".\n");
 	}
+	stats = cpufreq_get_stats(cpu, &total_time);
+	if (stats) {
+		printf(gettext ("  cpufreq stats: "));
+		while (stats) {
+			print_speed(stats->frequency);
+			printf(":%.2f%%", (100.0 * stats->time_in_state) / total_time);
+			stats = stats->next;
+			if (stats)
+				printf(", ");
+		}
+		cpufreq_put_stats(stats);
+		total_trans = cpufreq_get_transitions(cpu);
+		if (total_trans)
+			printf("  (%lu)\n", total_trans);
+	}
 }
 
 static void debug_output(unsigned int cpu, unsigned int all) {
@@ -236,7 +254,7 @@ static int get_freq_kernel(unsigned int cpu, unsigned int human) {
 }
 
 
-/* --hwfreq / -h */
+/* --hwfreq / -w */
 
 static int get_freq_hardware(unsigned int cpu, unsigned int human) {
 	unsigned long freq = cpufreq_get_freq_hardware(cpu);
@@ -315,6 +333,29 @@ static int get_affected_cpus(unsigned int cpu) {
 	return 0;
 }
 
+/* --stats / -s */
+
+static int get_freq_stats(unsigned int cpu, unsigned int human) {
+	unsigned long total_trans = cpufreq_get_transitions(cpu);
+	unsigned long long total_time;
+	struct cpufreq_stats *stats = cpufreq_get_stats(cpu, &total_time);
+	while (stats) {
+		if (human) {
+			print_speed(stats->frequency);
+			printf(":%.2f%%", (100.0 * stats->time_in_state) / total_time);
+		}
+		else
+			printf("%lu:%llu", stats->frequency, stats->time_in_state);
+		stats = stats->next;
+		if (stats)
+			printf(", ");
+	}
+	cpufreq_put_stats(stats);
+	if (total_trans)
+		printf("  (%lu)\n", total_trans);
+	return 0;
+}
+
 static void print_header(void) {
 	printf(PACKAGE " " VERSION ": cpufreq-info (C) Dominik Brodowski 2004-2006\n");
 	printf(gettext ("Report errors and bugs to %s, please.\n"), PACKAGE_BUGREPORT);
@@ -335,9 +376,10 @@ static void print_help(void) {
 	printf(gettext ("  -g, --governors      Determines available cpufreq governors *\n"));
 	printf(gettext ("  -a, --affected-cpus  Determines which CPUs can only switch frequency at the\n"
 			"                       same time *\n"));
+	printf(gettext ("  -s, --stats          Shows cpufreq statistics if available\n"));
 	printf(gettext ("  -o, --proc           Prints out information like provided by the /proc/cpufreq\n"
 	       "                       interface in 2.4. and early 2.6. kernels\n"));
-	printf(gettext ("  -m, --human          human-readable output for the -f and -w parameters\n"));
+	printf(gettext ("  -m, --human          human-readable output for the -f, -w and -s parameters\n"));
 	printf(gettext ("  -h, --help           Prints out this screen\n"));
 
 	printf("\n");
@@ -357,6 +399,7 @@ static struct option info_opts[] = {
 	{ .name="policy",	.has_arg=no_argument,		.flag=NULL,	.val='p'},
 	{ .name="governors",	.has_arg=no_argument,		.flag=NULL,	.val='g'},
 	{ .name="affected-cpus",.has_arg=no_argument,		.flag=NULL,	.val='a'},
+	{ .name="stats",	.has_arg=no_argument,		.flag=NULL,	.val='s'},
 	{ .name="proc",		.has_arg=no_argument,		.flag=NULL,	.val='o'},
 	{ .name="human",	.has_arg=no_argument,		.flag=NULL,	.val='m'},
 	{ .name="help",		.has_arg=no_argument,		.flag=NULL,	.val='h'},
@@ -375,7 +418,7 @@ int main(int argc, char **argv) {
 	textdomain (PACKAGE);
 
 	do {
-		ret = getopt_long(argc, argv, "c:hoefwldpgam", info_opts, NULL);
+		ret = getopt_long(argc, argv, "c:hoefwldpgasm", info_opts, NULL);
 		switch (ret) {
 		case '?':
 			output_param = '?';
@@ -397,6 +440,7 @@ int main(int argc, char **argv) {
 		case 'w':
 		case 'f':
 		case 'e':
+		case 's':
 			if (output_param) { 
 				output_param = -1; 
 				cont = 0; 
@@ -485,6 +529,9 @@ int main(int argc, char **argv) {
 		break;
 	case 'f':
 		ret = get_freq_kernel(cpu, human);
+		break;
+	case 's':
+		ret = get_freq_stats(cpu, human);
 		break;
 	}
 	return (ret);

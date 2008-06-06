@@ -45,6 +45,13 @@ struct cpufreq_affected_cpus {
 	struct cpufreq_affected_cpus *first;
 };
 
+struct cpufreq_stats {
+	unsigned long frequency;
+	unsigned long long time_in_state;
+	struct cpufreq_stats *next;
+	struct cpufreq_stats *first;
+};
+
 
 
 #ifdef __cplusplus
@@ -142,6 +149,18 @@ extern void cpufreq_put_available_frequencies(struct cpufreq_available_frequenci
 extern struct cpufreq_affected_cpus * cpufreq_get_affected_cpus(unsigned int cpu);
 
 extern void cpufreq_put_affected_cpus(struct cpufreq_affected_cpus *first);
+
+
+/* determine stats for cpufreq subsystem
+ *
+ * This is not available in all kernel versions or configurations.
+ */
+
+extern struct cpufreq_stats * cpufreq_get_stats(unsigned int cpu, unsigned long long *total_time);
+
+extern void cpufreq_put_stats(struct cpufreq_stats *stats);
+
+extern unsigned long cpufreq_get_transitions(unsigned int cpu);
 
 
 /* set new cpufreq policy 
