@@ -3,12 +3,12 @@
 # This file is distributed under the same license as the cpufrequtils package.
 # Mattia Dongili <malattia@gmail.com>, 2004-2005.
 #
-#, fuzzy
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: cpufrequtils 0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-03-26 12:01+0200\n"
+"POT-Creation-Date: 2008-06-14 16:17+0200\n"
 "PO-Revision-Date: 2005-05-04 20:00+0100\n"
 "Last-Translator: Mattia Dongili <malattia@gmail.com>\n"
 "Language-Team: NONE\n"
@@ -28,58 +28,58 @@ msgid ""
 msgstr ""
 "          frequenza minima CPU   -  frequenza massima CPU  -  gestore\n"
 
-#: utils/info.c:125
+#: utils/info.c:128
 #, c-format
 msgid "couldn't analyze CPU %d as it doesn't seem to be present\n"
 msgstr "impossibile analizzare la CPU %d poiche` non sembra essere presente\n"
 
-#: utils/info.c:129
+#: utils/info.c:132
 #, c-format
 msgid "analyzing CPU %d:\n"
 msgstr "analisi della CPU %d:\n"
 
-#: utils/info.c:136
+#: utils/info.c:139
 #, c-format
 msgid "  no or unknown cpufreq driver is active on this CPU\n"
 msgstr "  nessun modulo o modulo cpufreq sconosciuto per questa CPU\n"
 
-#: utils/info.c:138
+#: utils/info.c:141
 #, c-format
 msgid "  driver: %s\n"
 msgstr "  modulo %s\n"
 
-#: utils/info.c:144
+#: utils/info.c:147
 #, c-format
 msgid "  CPUs which need to switch frequency at the same time: "
 msgstr ""
 "  CPU per le quali e` necessario cambiare la frequenza contemporaneamente: "
 
-#: utils/info.c:154
+#: utils/info.c:157
 #, c-format
 msgid "  hardware limits: "
 msgstr "  limiti hardware: "
 
-#: utils/info.c:163
+#: utils/info.c:166
 #, c-format
 msgid "  available frequency steps: "
 msgstr "  frequenze disponibili: "
 
-#: utils/info.c:176
+#: utils/info.c:179
 #, c-format
 msgid "  available cpufreq governors: "
 msgstr "  gestori disponibili: "
 
-#: utils/info.c:187
+#: utils/info.c:190
 #, c-format
 msgid "  current policy: frequency should be within "
 msgstr "  gestore corrente: la frequenza deve mantenersi tra "
 
-#: utils/info.c:189
+#: utils/info.c:192
 #, c-format
 msgid " and "
 msgstr " e "
 
-#: utils/info.c:193
+#: utils/info.c:196
 #, c-format
 msgid ""
 "The governor \"%s\" may decide which speed to use\n"
@@ -88,32 +88,37 @@ msgstr ""
 " Il gestore \"%s\" puo` decidere quale velocita` usare\n"
 "                  in questo intervallo.\n"
 
-#: utils/info.c:200
+#: utils/info.c:203
 #, c-format
 msgid "  current CPU frequency is "
 msgstr "  la frequenza attuale della CPU e` "
 
-#: utils/info.c:203
+#: utils/info.c:206
 #, c-format
 msgid " (asserted by call to hardware)"
 msgstr " (ottenuta da una chiamata diretta all'hardware)"
 
-#: utils/info.c:320 utils/set.c:30
+#: utils/info.c:214
+#, c-format
+msgid "  cpufreq stats: "
+msgstr " statistiche cpufreq:"
+
+#: utils/info.c:361 utils/set.c:30
 #, c-format
 msgid "Report errors and bugs to %s, please.\n"
 msgstr "Per favore, comunicare errori e malfunzionamenti a %s.\n"
 
-#: utils/info.c:324
+#: utils/info.c:365
 #, c-format
 msgid "Usage: cpufreq-info [options]\n"
 msgstr "Uso: cpufreq-info [opzioni]\n"
 
-#: utils/info.c:325 utils/set.c:35
+#: utils/info.c:366 utils/set.c:35
 #, c-format
 msgid "Options:\n"
 msgstr "Opzioni:\n"
 
-#: utils/info.c:326
+#: utils/info.c:367
 #, c-format
 msgid ""
 "  -c CPU, --cpu CPU    CPU number which information shall be determined "
@@ -121,12 +126,12 @@ msgid ""
 msgstr ""
 "  -c CPU, --cpu CPU    Numero di CPU per la quale ottenere le informazioni\n"
 
-#: utils/info.c:327
+#: utils/info.c:368
 #, c-format
 msgid "  -e, --debug          Prints out debug information\n"
 msgstr "  -e, --debug          Mostra le informazioni di debug\n"
 
-#: utils/info.c:328
+#: utils/info.c:369
 #, c-format
 msgid ""
 "  -f, --freq           Get frequency the CPU currently runs at, according\n"
@@ -135,7 +140,7 @@ msgstr ""
 "  -f, --freq           Mostra la frequenza attuale della CPU secondo\n"
 "                       il modulo cpufreq *\n"
 
-#: utils/info.c:330
+#: utils/info.c:371
 #, c-format
 msgid ""
 "  -w, --hwfreq         Get frequency the CPU currently runs at, by reading\n"
@@ -144,7 +149,7 @@ msgstr ""
 "  -w, --hwfreq         Mostra la frequenza attuale della CPU leggendola\n"
 "                       dall'hardware (disponibile solo per l'utente root) *\n"
 
-#: utils/info.c:332
+#: utils/info.c:373
 #, c-format
 msgid ""
 "  -l, --hwlimits       Determine the minimum and maximum CPU frequency "
@@ -153,34 +158,39 @@ msgstr ""
 "  -l, --hwlimits       Determina le frequenze minima e massima possibiliper "
 "la CPU *\n"
 
-#: utils/info.c:333
+#: utils/info.c:374
 #, c-format
 msgid "  -d, --driver         Determines the used cpufreq kernel driver *\n"
 msgstr ""
 "  -d, --driver         Determina il modulo cpufreq del kernel in uso *\n"
 
-#: utils/info.c:334
+#: utils/info.c:375
 #, c-format
 msgid "  -p, --policy         Gets the currently used cpufreq policy *\n"
 msgstr ""
 "  -p, --policy         Mostra il gestore cpufreq attualmente in uso *\n"
 
-#: utils/info.c:335
+#: utils/info.c:376
 #, c-format
 msgid "  -g, --governors      Determines available cpufreq governors *\n"
 msgstr "  -g, --governors      Determina i gestori cpufreq disponibili *\n"
 
-#: utils/info.c:336
+#: utils/info.c:377
 #, c-format
 msgid ""
 "  -a, --affected-cpus  Determines which CPUs can only switch frequency at "
 "the\n"
 "                       same time *\n"
 msgstr ""
-"  -a, --affected-cpus  Determina quali CPU devono cambiare "
-"frequenza                        contemporaneamente *\n"
+"  -a, --affected-cpus  Determina quali CPU devono cambiare frequenza\n"
+"                       contemporaneamente *\n"
 
-#: utils/info.c:338
+#: utils/info.c:379
+#, c-format
+msgid "  -s, --stats          Shows cpufreq statistics if available\n"
+msgstr "  -s, --stats          Mostra le statistiche se disponibili\n"
+
+#: utils/info.c:380
 #, c-format
 msgid ""
 "  -o, --proc           Prints out information like provided by the /proc/"
@@ -191,20 +201,21 @@ msgstr ""
 "                       interfaccia cpufreq /proc/ presente nei kernel\n"
 "                       2.4 ed i primi 2.6\n"
 
-#: utils/info.c:340
+#: utils/info.c:382
 #, c-format
 msgid ""
-"  -m, --human          human-readable output for the -f and -w parameters\n"
+"  -m, --human          human-readable output for the -f, -w and -s "
+"parameters\n"
 msgstr ""
-"  -m, --human          formatta l'output delle opzioni -f e -w in maniera\n"
+"  -m, --human          formatta l'output delle opzioni -f, -w e -s in maniera\n"
 "                       leggibile da un essere umano\n"
 
-#: utils/info.c:341 utils/set.c:42
+#: utils/info.c:383 utils/set.c:42
 #, c-format
 msgid "  -h, --help           Prints out this screen\n"
 msgstr "  -h, --help           Stampa questa schermata\n"
 
-#: utils/info.c:344
+#: utils/info.c:386
 #, c-format
 msgid ""
 "If no argument or only the -c, --cpu parameter is given, debug output about\n"
@@ -215,7 +226,7 @@ msgstr ""
 "le informazioni di debug per cpufreq saranno utili ad esempio a riportare i "
 "bug.\n"
 
-#: utils/info.c:346
+#: utils/info.c:388
 #, c-format
 msgid ""
 "For the arguments marked with *, omitting the -c or --cpu argument is\n"
@@ -225,7 +236,7 @@ msgstr ""
 "specificarla\n"
 "con il valore 0\n"
 
-#: utils/info.c:434
+#: utils/info.c:478
 #, c-format
 msgid ""
 "The argument passed to this tool can't be combined with passing a --cpu "
@@ -234,7 +245,7 @@ msgstr ""
 "L'opzione specificata a questo programma non puo` essere combinata con --"
 "cpu\n"
 
-#: utils/info.c:447
+#: utils/info.c:491
 #, c-format
 msgid ""
 "You can't specify more than one --cpu parameter and/or\n"
@@ -243,7 +254,7 @@ msgstr ""
 "Non e` possibile specificare piu` di una volta l'opzione --cpu e/o\n"
 "specificare piu` di un parametro di output specifico\n"
 
-#: utils/info.c:453 utils/set.c:79
+#: utils/info.c:497 utils/set.c:79
 #, c-format
 msgid "invalid or unknown argument\n"
 msgstr "opzione sconosciuta o non valida\n"
