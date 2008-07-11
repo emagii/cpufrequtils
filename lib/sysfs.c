@@ -562,6 +562,8 @@ int sysfs_set_policy(unsigned int cpu, struct cpufreq_policy *policy)
 	char max[SYSFS_PATH_MAX];
 	char gov[SYSFS_PATH_MAX];
 	int ret;
+	unsigned long old_min;
+	int write_max_first;
 
 	if (!policy || !(policy->governor))
 		return -EINVAL;
@@ -575,13 +577,24 @@ int sysfs_set_policy(unsigned int cpu, struct cpufreq_policy *policy)
 	snprintf(min, SYSFS_PATH_MAX, "%lu", policy->min);
 	snprintf(max, SYSFS_PATH_MAX, "%lu", policy->max);
 
-	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
-	if (ret)
-		return ret;
+	old_min = sysfs_get_one_value(cpu, SCALING_MIN_FREQ);
+	write_max_first = (old_min && (policy->max < old_min) ? 0 : 1);
+
+	if (write_max_first) {
+		ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
+		if (ret)
+			return ret;
+	}
 
 	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MIN_FREQ, min, strlen(min));
 	if (ret)
 		return ret;
+
+	if (!write_max_first) {
+		ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
+		if (ret)
+			return ret;
+	}
 
 	return sysfs_write_one_value(cpu, WRITE_SCALING_GOVERNOR, gov, strlen(gov));
 }
