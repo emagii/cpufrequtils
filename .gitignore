@@ -11,8 +11,6 @@ lib/sysfs.lo
 lib/sysfs.o
 libcpufreq.la
 po/cpufrequtils.pot
-po/de.gmo
-po/fr.gmo
-po/it.gmo
+po/*.gmo
 utils/cpufreq-info.o
 utils/cpufreq-set.o

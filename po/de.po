@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpufrequtils 0.1-pre2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-06-10 20:13+0200\n"
+"POT-Creation-Date: 2008-07-14 13:48+0200\n"
 "PO-Revision-Date: 2004-11-03 22:21+0100\n"
 "Last-Translator:  <linux@brodo.de>\n"
 "Language-Team: NONE\n"
@@ -194,7 +194,8 @@ msgstr ""
 #: utils/info.c:379
 #, c-format
 msgid "  -s, --stats          Shows cpufreq statistics if available\n"
-msgstr "  -s, --stats          Zeigt, sofern möglich, Statistiken über cpufreq an.\n"
+msgstr ""
+"  -s, --stats          Zeigt, sofern möglich, Statistiken über cpufreq an.\n"
 
 #: utils/info.c:380
 #, c-format
