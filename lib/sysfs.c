@@ -196,9 +196,9 @@ int sysfs_cpu_exists(unsigned int cpu)
 	snprintf(file, SYSFS_PATH_MAX, PATH_TO_CPU "cpu%u/", cpu);
 
 	if ( stat(file, &statbuf) != 0 )
-		return 1;
+		return -ENOSYS;
 
-	return 1 - S_ISDIR(statbuf.st_mode);
+	return S_ISDIR(statbuf.st_mode) ? 0 : -ENOSYS;
 }
 
 

@@ -53,7 +53,7 @@ static int readout_proc_cpufreq(unsigned int cpu, unsigned long *min, unsigned l
 		if (cpu_read != cpu)
 			continue;
 
-		if ((tmp2 < tmp1) || (tmp2 > 100) || (max < min)) {
+		if ((tmp2 < tmp1) || (tmp2 > 100) || (*max < *min)) {
 			ret = -ENOSYS;
 			goto error;
 		}
