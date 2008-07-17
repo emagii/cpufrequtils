@@ -211,7 +211,7 @@ update-gmo: po/$(PACKAGE).pot
 			echo "msgmerge for $$HLANG failed!"; \
 			rm -f po/$$HLANG.new.po; \
 		fi; \
-		/usr/bin/msgfmt --statistics -o po/$$HLANG.gmo po/$$HLANG.po; \
+		msgfmt --statistics -o po/$$HLANG.gmo po/$$HLANG.po; \
 	done;
 
 clean:
