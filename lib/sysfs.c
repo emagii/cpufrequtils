@@ -29,7 +29,7 @@ unsigned int sysfs_read_file(unsigned int cpu, const char *fname, char *buf, siz
 	int fd;
 	size_t numread;
 
-	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s", 
+	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s",
 			 cpu, fname);
 
 	if ( ( fd = open(path, O_RDONLY) ) == -1 )
@@ -56,7 +56,7 @@ unsigned int sysfs_write_file(unsigned int cpu, const char *fname, const char *v
 	int fd;
 	size_t numwrite;
 
-	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s", 
+	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s",
 			 cpu, fname);
 
 	if ( ( fd = open(path, O_WRONLY) ) == -1 )
@@ -212,8 +212,8 @@ unsigned long sysfs_get_freq_hardware(unsigned int cpu)
 	return sysfs_get_one_value(cpu, CPUINFO_CUR_FREQ);
 }
 
-int sysfs_get_hardware_limits(unsigned int cpu, 
-			      unsigned long *min, 
+int sysfs_get_hardware_limits(unsigned int cpu,
+			      unsigned long *min,
 			      unsigned long *max)
 {
 	if ((!min) || (!max))

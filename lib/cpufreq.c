@@ -37,8 +37,8 @@ unsigned long cpufreq_get_freq_hardware(unsigned int cpu)
 	return (ret);
 }
 
-int cpufreq_get_hardware_limits(unsigned int cpu, 
-				unsigned long *min, 
+int cpufreq_get_hardware_limits(unsigned int cpu,
+				unsigned long *min,
 				unsigned long *max)
 {
 	int ret;

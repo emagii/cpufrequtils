@@ -93,7 +93,7 @@ static void print_speed(unsigned long speed)
 		tmp = speed % 10000;
 		if (tmp >= 5000)
 			speed += 10000;
-		printf ("%u.%02u GHz", ((unsigned int) speed/1000000), 
+		printf ("%u.%02u GHz", ((unsigned int) speed/1000000),
 			((unsigned int) (speed%1000000)/10000));
 	} else if (speed > 100000) {
 		tmp = speed % 1000;
@@ -104,7 +104,7 @@ static void print_speed(unsigned long speed)
 		tmp = speed % 100;
 		if (tmp >= 50)
 			speed += 100;
-		printf ("%u.%01u MHz", ((unsigned int) speed/1000), 
+		printf ("%u.%01u MHz", ((unsigned int) speed/1000),
 			((unsigned int) (speed%1000)/100));
 	} else
 		printf ("%lu kHz", speed);
@@ -173,7 +173,7 @@ static void debug_output_one(unsigned int cpu)
 		printf("\n");
 		cpufreq_put_available_frequencies(freqs);
 	}
-	
+
 	governors = cpufreq_get_available_governors(cpu);
 	if (governors) {
 		printf(gettext ("  available cpufreq governors: "));
@@ -194,7 +194,7 @@ static void debug_output_one(unsigned int cpu)
 
 		printf(".\n                  ");
 		printf(gettext ("The governor \"%s\" may"
-		       " decide which speed to use\n                  within this range.\n"), 
+		       " decide which speed to use\n                  within this range.\n"),
 		       policy->governor);
 		cpufreq_put_policy(policy);
 	}
@@ -441,10 +441,10 @@ int main(int argc, char **argv) {
 		case 'f':
 		case 'e':
 		case 's':
-			if (output_param) { 
-				output_param = -1; 
-				cont = 0; 
-				break; 
+			if (output_param) {
+				output_param = -1;
+				cont = 0;
+				break;
 			}
 			output_param = ret;
 			break;
@@ -470,7 +470,7 @@ int main(int argc, char **argv) {
 			break;
 		}
 	} while(cont);
-	
+
 	switch (output_param) {
 	case 'o':
 		if (cpu_defined) {

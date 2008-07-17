@@ -83,7 +83,7 @@ static void print_unknown_arg(void) {
 static unsigned long string_to_frequency(const char* str)
 {
 	char normalized[NORM_FREQ_LEN];
-	struct freq_units const * unit;	
+	struct freq_units const * unit;
 	const char* scan;
 	char* end;
 	unsigned long freq;
