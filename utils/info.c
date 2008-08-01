@@ -223,6 +223,8 @@ static void debug_output_one(unsigned int cpu)
 		total_trans = cpufreq_get_transitions(cpu);
 		if (total_trans)
 			printf("  (%lu)\n", total_trans);
+		else
+			printf("\n");
 	}
 }
 
