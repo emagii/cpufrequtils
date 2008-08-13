@@ -171,11 +171,12 @@ endif
 
 all: ccdv libcpufreq utils $(COMPILE_NLS)
 
-ccdv:
+ccdv: build/ccdv
+build/ccdv: build/ccdv.c
 	@echo "Building ccdv"
-	@$(HOSTCC) -O1 build/ccdv.c -o build/ccdv
+	@$(HOSTCC) -O1  -O1 $< -o $@
 
-%.lo: $(LIB_OBJS) $(LIB_HEADERS)
+%.lo: $(LIB_OBJS) $(LIB_HEADERS) ccdv
 	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=compile $(CC) $(CFLAGDEF) $(CFLAGS) -o $@ -c $*.c
 
 libcpufreq.la: $(LIB_OBJS) $(LIB_HEADERS) $(LIB_PARTS) Makefile
