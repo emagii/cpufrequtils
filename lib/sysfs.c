@@ -427,7 +427,7 @@ struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 	return NULL;
 }
 
-struct cpufreq_stats * sysfs_get_stats(unsigned int cpu, unsigned long *total_time) {
+struct cpufreq_stats * sysfs_get_stats(unsigned int cpu, unsigned long long *total_time) {
 	struct cpufreq_stats *first = NULL;
 	struct cpufreq_stats *current = NULL;
 	char one_value[SYSFS_PATH_MAX];
