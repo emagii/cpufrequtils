@@ -33,6 +33,9 @@ V ?=		false
 # Requires gettext.
 NLS ?=		true
 
+# cpufreq-bench benchmarking tool
+CPUFRQ_BENCH ?= true
+
 # Use the sysfs-based interface which is included in all 2.6 kernels
 # built with cpufreq support
 SYSFS ?=	true
@@ -62,10 +65,13 @@ LANGUAGES = 			de fr it cs pt
 # added in front of any of them
 
 bindir ?=	/usr/bin
+sbindir ?=	/usr/sbin
 mandir ?=	/usr/man
 includedir ?=	/usr/include
 libdir ?=	/usr/lib
 localedir ?=	/usr/share/locale
+docdir ?=       /usr/share/doc/packages/cpufrequtils
+confdir ?=      /etc/
 
 # Toolchain: what tools do we use, and what options do they need:
 
@@ -142,6 +148,10 @@ ifeq ($(strip $(NLS)),true)
 	COMPILE_NLS += update-gmo
 endif
 
+ifeq ($(strip $(CPUFRQ_BENCH)),true)
+	INSTALL_BENCH += install-bench
+	COMPILE_BENCH += compile-bench
+endif
 
 CFLAGS += $(WARNINGS) -I$(GCCINCDIR)
 
@@ -169,7 +179,7 @@ endif
 
 # the actual make rules
 
-all: ccdv libcpufreq utils $(COMPILE_NLS)
+all: ccdv libcpufreq utils $(COMPILE_NLS) $(COMPILE_BENCH)
 
 ccdv: build/ccdv
 build/ccdv: build/ccdv.c
@@ -215,6 +225,9 @@ update-gmo: po/$(PACKAGE).pot
 		msgfmt --statistics -o po/$$HLANG.gmo po/$$HLANG.po; \
 	done;
 
+compile-bench: libcpufreq
+	@V=$(V) make -C bench
+
 clean:
 	-find . \( -not -type d \) -and \( -name '*~' -o -name '*.[oas]' -o -name '*.l[oas]' \) -type f -print \
 	 | xargs rm -f
@@ -223,6 +236,7 @@ clean:
 	-rm -f cpufreq-info cpufreq-set
 	-rm -f build/ccdv
 	-rm -rf po/*.gmo po/*.pot
+	make -C bench clean
 
 
 install-lib:
@@ -247,7 +261,11 @@ install-gmo:
 		$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo; \
 	done;
 
-install: install-lib install-tools install-man $(INSTALL_NLS)
+install-bench:
+	@#DESTDIR must be set from outside to survive
+	@sbindir=$(sbindir) docdir=$(docdir) confdir=$(confdir) make -C bench install
+       
+install: install-lib install-tools install-man $(INSTALL_NLS) $(INSTALL_BENCH)
 
 uninstall:
 	- rm -f $(DESTDIR)${libdir}/libcpufreq.*
