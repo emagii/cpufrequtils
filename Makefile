@@ -33,8 +33,9 @@ V ?=		false
 # Requires gettext.
 NLS ?=		true
 
+# Set the following to 'true' to build/install the
 # cpufreq-bench benchmarking tool
-CPUFRQ_BENCH ?= true
+CPUFRQ_BENCH ?= false
 
 # Use the sysfs-based interface which is included in all 2.6 kernels
 # built with cpufreq support
