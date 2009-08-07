@@ -153,6 +153,19 @@ void cpufreq_put_affected_cpus(struct cpufreq_affected_cpus *any) {
 }
 
 
+struct cpufreq_affected_cpus * cpufreq_get_related_cpus(unsigned int cpu) {
+	struct cpufreq_affected_cpus * ret;
+	ret = sysfs_get_related_cpus(cpu);
+	if (!ret)
+		ret = proc_get_related_cpus(cpu);
+	return (ret);
+}
+
+void cpufreq_put_related_cpus(struct cpufreq_affected_cpus *any) {
+	cpufreq_put_affected_cpus(any);
+}
+
+
 int cpufreq_set_policy(unsigned int cpu, struct cpufreq_policy *policy) {
 	int ret;
 	if (!policy || !(policy->governor))

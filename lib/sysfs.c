@@ -1,5 +1,5 @@
 /*
- *  (C) 2004  Dominik Brodowski <linux@dominikbrodowski.de>
+ *  (C) 2004-2009  Dominik Brodowski <linux@dominikbrodowski.de>
  *
  *  Licensed under the terms of the GNU GPL License version 2.
  */
@@ -370,7 +370,8 @@ struct cpufreq_available_frequencies * sysfs_get_available_frequencies(unsigned 
 	return NULL;
 }
 
-struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
+static struct cpufreq_affected_cpus * sysfs_get_cpu_list(unsigned int cpu,
+							 const char *file) {
 	struct cpufreq_affected_cpus *first = NULL;
 	struct cpufreq_affected_cpus *current = NULL;
 	char one_value[SYSFS_PATH_MAX];
@@ -378,7 +379,7 @@ struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 	unsigned int pos, i;
 	unsigned int len;
 
-	if ( ( len = sysfs_read_file(cpu, "affected_cpus", linebuf, sizeof(linebuf))) == 0 )
+	if ( ( len = sysfs_read_file(cpu, file, linebuf, sizeof(linebuf))) == 0 )
 	{
 		return NULL;
 	}
@@ -425,6 +426,14 @@ struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
 		first = current;
 	}
 	return NULL;
+}
+
+struct cpufreq_affected_cpus * sysfs_get_affected_cpus(unsigned int cpu) {
+	return sysfs_get_cpu_list(cpu, "affected_cpus");
+}
+
+struct cpufreq_affected_cpus * sysfs_get_related_cpus(unsigned int cpu) {
+	return sysfs_get_cpu_list(cpu, "related_cpus");
 }
 
 struct cpufreq_stats * sysfs_get_stats(unsigned int cpu, unsigned long long *total_time) {

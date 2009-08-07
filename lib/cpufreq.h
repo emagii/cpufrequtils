@@ -151,6 +151,17 @@ extern struct cpufreq_affected_cpus * cpufreq_get_affected_cpus(unsigned int cpu
 extern void cpufreq_put_affected_cpus(struct cpufreq_affected_cpus *first);
 
 
+/* determine related CPUs 
+ *
+ * Remember to call cpufreq_put_related_cpus when no longer needed
+ * to avoid memory leakage, please.
+ */
+
+extern struct cpufreq_affected_cpus * cpufreq_get_related_cpus(unsigned int cpu);
+
+extern void cpufreq_put_related_cpus(struct cpufreq_affected_cpus *first);
+
+
 /* determine stats for cpufreq subsystem
  *
  * This is not available in all kernel versions or configurations.
