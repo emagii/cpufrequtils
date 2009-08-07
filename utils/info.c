@@ -142,9 +142,20 @@ static void debug_output_one(unsigned int cpu)
 		cpufreq_put_driver(driver);
 	}
 
+	cpus = cpufreq_get_related_cpus(cpu);
+	if (cpus) {
+		printf(gettext ("  CPUs which run at the same hardware frequency: "));
+		while (cpus->next) {
+			printf("%d ", cpus->cpu);
+			cpus = cpus->next;
+		}
+		printf("%d\n", cpus->cpu);
+		cpufreq_put_related_cpus(cpus);
+	}
+
 	cpus = cpufreq_get_affected_cpus(cpu);
 	if (cpus) {
-		printf(gettext ("  CPUs which need to switch frequency at the same time: "));
+		printf(gettext ("  CPUs which coordinate software frequency requirements: "));
 		while (cpus->next) {
 			printf("%d ", cpus->cpu);
 			cpus = cpus->next;
@@ -335,6 +346,22 @@ static int get_affected_cpus(unsigned int cpu) {
 	return 0;
 }
 
+/* --related-cpus  / -r */
+
+static int get_related_cpus(unsigned int cpu) {
+	struct cpufreq_affected_cpus *cpus = cpufreq_get_related_cpus(cpu);
+	if (!cpus)
+		return -EINVAL;
+
+	while (cpus->next) {
+		printf("%d ", cpus->cpu);
+		cpus = cpus->next;
+	}
+	printf("%d\n", cpus->cpu);
+	cpufreq_put_related_cpus(cpus);
+	return 0;
+}
+
 /* --stats / -s */
 
 static int get_freq_stats(unsigned int cpu, unsigned int human) {
@@ -376,8 +403,9 @@ static void print_help(void) {
 	printf(gettext ("  -d, --driver         Determines the used cpufreq kernel driver *\n"));
 	printf(gettext ("  -p, --policy         Gets the currently used cpufreq policy *\n"));
 	printf(gettext ("  -g, --governors      Determines available cpufreq governors *\n"));
-	printf(gettext ("  -a, --affected-cpus  Determines which CPUs can only switch frequency at the\n"
-			"                       same time *\n"));
+	printf(gettext ("  -r, --related-cpus   Determines which CPUs run at the same hardware frequency *\n"));
+	printf(gettext ("  -a, --affected-cpus  Determines which CPUs need to coordinate software frequency\n"
+			"                       requirements *\n"));
 	printf(gettext ("  -s, --stats          Shows cpufreq statistics if available\n"));
 	printf(gettext ("  -o, --proc           Prints out information like provided by the /proc/cpufreq\n"
 	       "                       interface in 2.4. and early 2.6. kernels\n"));
@@ -400,6 +428,7 @@ static struct option info_opts[] = {
 	{ .name="driver",	.has_arg=no_argument,		.flag=NULL,	.val='d'},
 	{ .name="policy",	.has_arg=no_argument,		.flag=NULL,	.val='p'},
 	{ .name="governors",	.has_arg=no_argument,		.flag=NULL,	.val='g'},
+	{ .name="related-cpus", .has_arg=no_argument,		.flag=NULL,	.val='r'},
 	{ .name="affected-cpus",.has_arg=no_argument,		.flag=NULL,	.val='a'},
 	{ .name="stats",	.has_arg=no_argument,		.flag=NULL,	.val='s'},
 	{ .name="proc",		.has_arg=no_argument,		.flag=NULL,	.val='o'},
@@ -420,7 +449,7 @@ int main(int argc, char **argv) {
 	textdomain (PACKAGE);
 
 	do {
-		ret = getopt_long(argc, argv, "c:hoefwldpgasm", info_opts, NULL);
+		ret = getopt_long(argc, argv, "c:hoefwldpgrasm", info_opts, NULL);
 		switch (ret) {
 		case '?':
 			output_param = '?';
@@ -435,6 +464,7 @@ int main(int argc, char **argv) {
 			break;
 		case 'o':
 		case 'a':
+		case 'r':
 		case 'g':
 		case 'p':
 		case 'd':
@@ -513,6 +543,9 @@ int main(int argc, char **argv) {
 		break;
 	case 'a':
 		ret = get_affected_cpus(cpu);
+		break;
+	case 'r':
+		ret = get_related_cpus(cpu);
 		break;
 	case 'g':
 		ret = get_available_governors(cpu);
