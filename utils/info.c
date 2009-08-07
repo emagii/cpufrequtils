@@ -155,7 +155,7 @@ static void debug_output_one(unsigned int cpu)
 
 	cpus = cpufreq_get_affected_cpus(cpu);
 	if (cpus) {
-		printf(gettext ("  CPUs which coordinate software frequency requirements: "));
+		printf(gettext ("  CPUs which need to have their frequency coordinated by software: "));
 		while (cpus->next) {
 			printf("%d ", cpus->cpu);
 			cpus = cpus->next;
@@ -404,8 +404,8 @@ static void print_help(void) {
 	printf(gettext ("  -p, --policy         Gets the currently used cpufreq policy *\n"));
 	printf(gettext ("  -g, --governors      Determines available cpufreq governors *\n"));
 	printf(gettext ("  -r, --related-cpus   Determines which CPUs run at the same hardware frequency *\n"));
-	printf(gettext ("  -a, --affected-cpus  Determines which CPUs need to coordinate software frequency\n"
-			"                       requirements *\n"));
+	printf(gettext ("  -a, --affected-cpus  Determines which CPUs need to have their frequency\n"
+			"                       coordinated by software *\n"));
 	printf(gettext ("  -s, --stats          Shows cpufreq statistics if available\n"));
 	printf(gettext ("  -o, --proc           Prints out information like provided by the /proc/cpufreq\n"
 	       "                       interface in 2.4. and early 2.6. kernels\n"));
