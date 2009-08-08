@@ -1,5 +1,5 @@
 /*
- *  (C) 2004  Dominik Brodowski <linux@dominikbrodowski.de>
+ *  (C) 2004-2009  Dominik Brodowski <linux@dominikbrodowski.de>
  *
  *  Licensed under the terms of the GNU GPL License version 2.
  */

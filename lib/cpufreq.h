@@ -1,7 +1,7 @@
 /*
  *  cpufreq.h - definitions for libcpufreq
  *
- *  Copyright (C) 2004  Dominik Brodowski <linux@dominikbrodowski.de>
+ *  Copyright (C) 2004-2009  Dominik Brodowski <linux@dominikbrodowski.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
