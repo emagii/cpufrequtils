@@ -112,13 +112,40 @@ static void print_speed(unsigned long speed)
 	return;
 }
 
+static void print_duration(unsigned long duration)
+{
+	unsigned long tmp;
+
+	if (duration > 1000000) {
+		tmp = duration % 10000;
+		if (tmp >= 5000)
+			duration += 10000;
+		printf ("%u.%02u ms", ((unsigned int) duration/1000000),
+			((unsigned int) (duration%1000000)/10000));
+	} else if (duration > 100000) {
+		tmp = duration % 1000;
+		if (tmp >= 500)
+			duration += 1000;
+		printf ("%u us", ((unsigned int) duration / 1000));
+	} else if (duration > 1000) {
+		tmp = duration % 100;
+		if (tmp >= 50)
+			duration += 100;
+		printf ("%u.%01u us", ((unsigned int) duration/1000),
+			((unsigned int) (duration%1000)/100));
+	} else
+		printf ("%lu ns", duration);
+
+	return;
+}
+
 static void debug_output_one(unsigned int cpu)
 {
 	char *driver;
 	struct cpufreq_affected_cpus *cpus;
 	struct cpufreq_available_frequencies *freqs;
 	unsigned long min, max, freq_kernel, freq_hardware;
-	unsigned long total_trans;
+	unsigned long total_trans, latency;
 	unsigned long long total_time;
 	struct cpufreq_policy *policy;
 	struct cpufreq_available_governors * governors;
@@ -162,6 +189,13 @@ static void debug_output_one(unsigned int cpu)
 		}
 		printf("%d\n", cpus->cpu);
 		cpufreq_put_affected_cpus(cpus);
+	}
+
+	latency = cpufreq_get_transition_latency(cpu);
+	if (latency) {
+		printf(gettext ("  maximum transition latency: "));
+		print_duration(latency);
+		printf(".\n");
 	}
 
 	if (!(cpufreq_get_hardware_limits(cpu, &min, &max))) {
@@ -385,8 +419,23 @@ static int get_freq_stats(unsigned int cpu, unsigned int human) {
 	return 0;
 }
 
+/* --latency / -y */
+
+static int get_latency(unsigned int cpu, unsigned int human) {
+	unsigned long latency = cpufreq_get_transition_latency(cpu);
+	if (!latency)
+		return -EINVAL;
+
+	if (human) {
+		print_duration(latency);
+		printf("\n");
+	} else
+		printf("%lu\n", latency);
+	return 0;
+}
+
 static void print_header(void) {
-	printf(PACKAGE " " VERSION ": cpufreq-info (C) Dominik Brodowski 2004-2006\n");
+	printf(PACKAGE " " VERSION ": cpufreq-info (C) Dominik Brodowski 2004-2009\n");
 	printf(gettext ("Report errors and bugs to %s, please.\n"), PACKAGE_BUGREPORT);
 }
 
@@ -407,9 +456,10 @@ static void print_help(void) {
 	printf(gettext ("  -a, --affected-cpus  Determines which CPUs need to have their frequency\n"
 			"                       coordinated by software *\n"));
 	printf(gettext ("  -s, --stats          Shows cpufreq statistics if available\n"));
+	printf(gettext ("  -y, --latency        Determines the maximum latency on CPU frequency changes *\n"));
 	printf(gettext ("  -o, --proc           Prints out information like provided by the /proc/cpufreq\n"
 	       "                       interface in 2.4. and early 2.6. kernels\n"));
-	printf(gettext ("  -m, --human          human-readable output for the -f, -w and -s parameters\n"));
+	printf(gettext ("  -m, --human          human-readable output for the -f, -w, -s and -y parameters\n"));
 	printf(gettext ("  -h, --help           Prints out this screen\n"));
 
 	printf("\n");
@@ -431,6 +481,7 @@ static struct option info_opts[] = {
 	{ .name="related-cpus", .has_arg=no_argument,		.flag=NULL,	.val='r'},
 	{ .name="affected-cpus",.has_arg=no_argument,		.flag=NULL,	.val='a'},
 	{ .name="stats",	.has_arg=no_argument,		.flag=NULL,	.val='s'},
+	{ .name="latency",	.has_arg=no_argument,		.flag=NULL,	.val='y'},
 	{ .name="proc",		.has_arg=no_argument,		.flag=NULL,	.val='o'},
 	{ .name="human",	.has_arg=no_argument,		.flag=NULL,	.val='m'},
 	{ .name="help",		.has_arg=no_argument,		.flag=NULL,	.val='h'},
@@ -449,7 +500,7 @@ int main(int argc, char **argv) {
 	textdomain (PACKAGE);
 
 	do {
-		ret = getopt_long(argc, argv, "c:hoefwldpgrasm", info_opts, NULL);
+		ret = getopt_long(argc, argv, "c:hoefwldpgrasmy", info_opts, NULL);
 		switch (ret) {
 		case '?':
 			output_param = '?';
@@ -473,6 +524,7 @@ int main(int argc, char **argv) {
 		case 'f':
 		case 'e':
 		case 's':
+		case 'y':
 			if (output_param) {
 				output_param = -1;
 				cont = 0;
@@ -567,6 +619,9 @@ int main(int argc, char **argv) {
 		break;
 	case 's':
 		ret = get_freq_stats(cpu, human);
+		break;
+	case 'y':
+		ret = get_latency(cpu, human);
 		break;
 	}
 	return (ret);
