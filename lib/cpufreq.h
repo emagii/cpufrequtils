@@ -80,6 +80,12 @@ extern unsigned long cpufreq_get_freq_hardware(unsigned int cpu);
 #define cpufreq_get(cpu) cpufreq_get_freq_kernel(cpu);
 
 
+/* determine CPU transition latency
+ *
+ * returns 0 on failure, else transition latency in 10^(-9) s = nanoseconds
+ */
+extern unsigned long cpufreq_get_transition_latency(unsigned int cpu);
+
 
 /* determine hardware CPU frequency limits
  *

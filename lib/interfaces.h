@@ -3,6 +3,7 @@
 extern unsigned int sysfs_cpu_exists(unsigned int cpu);
 extern unsigned long sysfs_get_freq_kernel(unsigned int cpu);
 extern unsigned long sysfs_get_freq_hardware(unsigned int cpu);
+extern unsigned long sysfs_get_transition_latency(unsigned int cpu);
 extern int sysfs_get_hardware_limits(unsigned int cpu, unsigned long *min, unsigned long *max);
 extern char * sysfs_get_driver(unsigned int cpu);
 extern struct cpufreq_policy * sysfs_get_policy(unsigned int cpu);
@@ -23,6 +24,7 @@ extern int sysfs_set_frequency(unsigned int cpu, unsigned long target_frequency)
 static inline unsigned int sysfs_cpu_exists(unsigned int cpu) { return -ENOSYS; }
 static inline unsigned long sysfs_get_freq_kernel(unsigned int cpu) { return 0; }
 static inline unsigned long sysfs_get_freq_hardware(unsigned int cpu) { return 0; }
+static inline unsigned long sysfs_get_transition_latency(unsigned int cpu) { return 0; }
 static inline int sysfs_get_hardware_limits(unsigned int cpu, unsigned long *min, unsigned long *max)  { return -ENOSYS; }
 static inline char * sysfs_get_driver(unsigned int cpu) { return NULL; }
 static inline struct cpufreq_policy * sysfs_get_policy(unsigned int cpu) { return NULL; }
@@ -61,6 +63,7 @@ static inline int proc_set_frequency(unsigned int cpu, unsigned long target_freq
 /* these aren't implemented in /proc, and probably never will...*/
 
 static inline unsigned long proc_get_freq_hardware(unsigned int cpu) { return 0; }
+static inline unsigned long proc_get_transition_latency(unsigned int cpu) { return -ENOSYS; }
 static inline int proc_get_hardware_limits(unsigned int cpu, unsigned long *min, unsigned long *max)  { return -ENOSYS; }
 static inline char * proc_get_driver(unsigned int cpu) {return NULL; }
 static inline struct cpufreq_available_governors * proc_get_available_governors(unsigned int cpu) { return NULL; }
@@ -70,3 +73,4 @@ static inline struct cpufreq_affected_cpus * proc_get_related_cpus(unsigned int 
 static inline int proc_modify_policy_min(unsigned int cpu, unsigned long min_freq) { return -ENOSYS; }
 static inline int proc_modify_policy_max(unsigned int cpu, unsigned long max_freq) { return -ENOSYS; }
 static inline int proc_modify_policy_governor(unsigned int cpu, char *governor) { return -ENOSYS; }
+

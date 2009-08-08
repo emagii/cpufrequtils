@@ -80,6 +80,7 @@ enum {
 	CPUINFO_CUR_FREQ,
 	CPUINFO_MIN_FREQ,
 	CPUINFO_MAX_FREQ,
+	CPUINFO_LATENCY,
 	SCALING_CUR_FREQ,
 	SCALING_MIN_FREQ,
 	SCALING_MAX_FREQ,
@@ -91,6 +92,7 @@ static const char *value_files[MAX_VALUE_FILES] = {
 	[CPUINFO_CUR_FREQ] = "cpuinfo_cur_freq",
 	[CPUINFO_MIN_FREQ] = "cpuinfo_min_freq",
 	[CPUINFO_MAX_FREQ] = "cpuinfo_max_freq",
+	[CPUINFO_LATENCY]  = "cpuinfo_transition_latency",
 	[SCALING_CUR_FREQ] = "scaling_cur_freq",
 	[SCALING_MIN_FREQ] = "scaling_min_freq",
 	[SCALING_MAX_FREQ] = "scaling_max_freq",
@@ -210,6 +212,11 @@ unsigned long sysfs_get_freq_kernel(unsigned int cpu)
 unsigned long sysfs_get_freq_hardware(unsigned int cpu)
 {
 	return sysfs_get_one_value(cpu, CPUINFO_CUR_FREQ);
+}
+
+unsigned long sysfs_get_transition_latency(unsigned int cpu)
+{
+	return sysfs_get_one_value(cpu, CPUINFO_LATENCY);
 }
 
 int sysfs_get_hardware_limits(unsigned int cpu,

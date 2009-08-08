@@ -37,6 +37,14 @@ unsigned long cpufreq_get_freq_hardware(unsigned int cpu)
 	return (ret);
 }
 
+unsigned long cpufreq_get_transition_latency(unsigned int cpu)
+{
+	unsigned long ret = sysfs_get_transition_latency(cpu);
+	if (!ret)
+		ret = proc_get_transition_latency(cpu);
+	return (ret);
+}
+
 int cpufreq_get_hardware_limits(unsigned int cpu,
 				unsigned long *min,
 				unsigned long *max)
