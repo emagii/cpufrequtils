@@ -26,6 +26,9 @@ new cpufreq governor.
 \fB\-f\fR \fB\-\-freq\fR <FREQ>
 specific frequency to be set. Requires userspace governor to be available and loaded.
 .TP 
+\fB\-r\fR \fB\-\-related\fR
+modify all hardware-related CPUs at the same time
+.TP 
 \fB\-h\fR \fB\-\-help\fR
 Prints out the help screen.
 .SH "REMARKS"
@@ -34,7 +37,9 @@ Omitting the \-c or \-\-cpu argument is equivalent to setting it to zero.
 .LP 
 The \-f FREQ, \-\-freq FREQ parameter cannot be combined with any other parameter except the \-c CPU, \-\-cpu CPU parameter.
 .LP 
-FREQuencies can be passed in Hz, kHz (default), MHz, GHz, or THz by postfixing the value with the wanted unit name, without any space (FREQuency in kHz =^ Hz * 0.001 =^ MHz * 1000 =^ GHz * 1000000).
+FREQuencies can be passed in Hz, kHz (default), MHz, GHz, or THz by postfixing the value with the wanted unit name, without any space (frequency in kHz =^ Hz * 0.001 =^ MHz * 1000 =^ GHz * 1000000).
+.LP 
+On Linux kernels up to 2.6.29, the \-r or \-\-related parameter is ignored.
 .SH "FILES" 
 .nf
 \fI/sys/devices/system/cpu/cpu*/cpufreq/\fP  

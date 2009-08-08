@@ -1,5 +1,5 @@
 /*
- *  (C) 2004-2006  Dominik Brodowski <linux@dominikbrodowski.de>
+ *  (C) 2004-2009  Dominik Brodowski <linux@dominikbrodowski.de>
  *
  *  Licensed under the terms of the GNU GPL License version 2.
  */
@@ -26,7 +26,7 @@
 #define NORM_FREQ_LEN 32
 
 static void print_header(void) {
-        printf(PACKAGE " " VERSION ": cpufreq-set (C) Dominik Brodowski 2004-2006\n");
+        printf(PACKAGE " " VERSION ": cpufreq-set (C) Dominik Brodowski 2004-2009\n");
 	printf(gettext ("Report errors and bugs to %s, please.\n"), PACKAGE_BUGREPORT);
 }
 
@@ -39,7 +39,8 @@ static void print_help(void) {
 	printf(gettext ("  -g GOV, --governor GOV   new cpufreq governor\n"));
 	printf(gettext ("  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
 	       "                           governor to be available and loaded\n"));
-	printf(gettext ("  -h, --help           Prints out this screen\n"));
+	printf(gettext ("  -r, --related            Switches all hardware-related CPUs"));
+	printf(gettext ("  -h, --help               Prints out this screen\n"));
 	printf("\n");
 	printf(gettext ("Notes:\n"
 	       "1. Omitting the -c or --cpu argument is equivalent to setting it to zero\n"
@@ -58,6 +59,7 @@ static struct option set_opts[] = {
 	{ .name="governor",	.has_arg=required_argument,	.flag=NULL,	.val='g'},
 	{ .name="freq",		.has_arg=required_argument,	.flag=NULL,	.val='f'},
 	{ .name="help",		.has_arg=no_argument,		.flag=NULL,	.val='h'},
+	{ .name="related",	.has_arg=no_argument,		.flag=NULL,	.val='r'},
 };
 
 struct freq_units {
@@ -168,12 +170,21 @@ int main(int argc, char **argv) {
 	int gov_is_set = 0;
 	int cpu_is_set = 0;
 	int double_parm = 0;
+	int related = 0;
+	struct cpufreq_affected_cpus single_cpu = {
+		.cpu = 0,
+		.next = NULL,
+		.first = &single_cpu,
+	};
+	struct cpufreq_affected_cpus *cpus = NULL;
+	struct cpufreq_affected_cpus *this_cpu = NULL;
 
 	setlocale(LC_ALL, "");
 	textdomain (PACKAGE);
 
+	/* parameter parsing */
 	do {
-		ret = getopt_long(argc, argv, "c:d:u:g:f:h", set_opts, NULL);
+		ret = getopt_long(argc, argv, "c:d:u:g:f:hr", set_opts, NULL);
 		switch (ret) {
 		case '?':
 			print_unknown_arg();
@@ -184,6 +195,11 @@ int main(int argc, char **argv) {
 			return 0;
 		case -1:
 			cont = 0;
+			break;
+		case 'r':
+			if (related)
+				double_parm++;
+			related++;
 			break;
 		case 'c':
 			if (cpu_is_set)
@@ -240,6 +256,7 @@ int main(int argc, char **argv) {
 		}
 	} while(cont);
 
+	/* parameter checking */
 	if (double_parm) {
 		print_header();
 		printf("the same parameter was passed more than once\n");
@@ -247,61 +264,85 @@ int main(int argc, char **argv) {
 	}
 
 	if (freq_is_set) {
-		if ((min_is_set) || (max_is_set) || (gov_is_set)) {
+		if ((min_is_set) || (max_is_set) || (gov_is_set))
 			printf(gettext ("the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
-			       "-g/--governor parameters\n"));
-			return -EINVAL;
-		}
-		ret = cpufreq_set_frequency(cpu, freq);
-		goto out;
+					"-g/--governor parameters\n"));
+		return -EINVAL;
 	}
 
-	ret = min_is_set + max_is_set + gov_is_set;
+	double_parm = min_is_set + max_is_set + gov_is_set + freq_is_set;
 
-	if (!ret) {
-			printf(gettext ("At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
-			       "-g/--governor must be passed\n"));
-			return -EINVAL;
+	if (!double_parm) {
+		printf(gettext ("At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
+				"-g/--governor must be passed\n"));
+		return -EINVAL;
 	}
 
-	if (ret == 1) {
-		if (min_is_set)
-			ret = cpufreq_modify_policy_min(cpu, min);
-		else if (max_is_set)
-			ret = cpufreq_modify_policy_max(cpu, max);
-		else if (gov_is_set)
-			ret = cpufreq_modify_policy_governor(cpu, gov);
-		if (!ret)
-			return 0;
+
+	/* which CPUs shall we modify? */
+	if (related)
+		cpus = cpufreq_get_related_cpus(cpu);
+
+	if (!cpus) {
+		cpus = &single_cpu;
+		cpus->cpu = cpu;
 	}
 
-	{
-		struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
-		struct cpufreq_policy new_pol;
-		if (!cur_pol) {
-			printf(gettext ("wrong, unknown or unhandled CPU?\n"));
-			return -EINVAL;
+	this_cpu = cpus;
+	while (1) {
+		cpu = this_cpu->cpu;
+
+		if (freq_is_set) {
+			ret = cpufreq_set_frequency(cpu, freq);
+			goto next;
 		}
 
-		if (min_is_set)
-			new_pol.min = min;
-		else
-			new_pol.min = cur_pol->min;
+		if (double_parm == 1) {
+			if (min_is_set)
+				ret = cpufreq_modify_policy_min(cpu, min);
+			else if (max_is_set)
+				ret = cpufreq_modify_policy_max(cpu, max);
+			else if (gov_is_set)
+				ret = cpufreq_modify_policy_governor(cpu, gov);
+		} else {
+			struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
+			struct cpufreq_policy new_pol;
+			if (!cur_pol) {
+				printf(gettext ("wrong, unknown or unhandled CPU?\n"));
+				return -EINVAL;
+			}
 
-		if (max_is_set)
-			new_pol.max = max;
-		else
-			new_pol.max = cur_pol->max;
+			if (min_is_set)
+				new_pol.min = min;
+			else
+				new_pol.min = cur_pol->min;
 
-		new_pol.governor = gov;
-		if (!gov_is_set)
-			strncpy(gov, cur_pol->governor, 20);
+			if (max_is_set)
+				new_pol.max = max;
+			else
+				new_pol.max = cur_pol->max;
 
-		cpufreq_put_policy(cur_pol);
+			new_pol.governor = gov;
+			if (!gov_is_set)
+				strncpy(gov, cur_pol->governor, 20);
 
-		ret = cpufreq_set_policy(cpu, &new_pol);
+			cpufreq_put_policy(cur_pol);
+
+			ret = cpufreq_set_policy(cpu, &new_pol);
+		}
+
+	next:
+		if (ret)
+			break;
+
+		this_cpu = this_cpu->next;
+		if (!this_cpu)
+			break;
 	}
- out:
+
+	if (cpus != &single_cpu)
+		cpufreq_put_related_cpus(cpus);
+
 	if (ret) {
 		printf(gettext ("Error setting new values. Common errors:\n"
 		       "- Do you have proper administration rights? (super-user?)\n"
