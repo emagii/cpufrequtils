@@ -38,7 +38,8 @@ static unsigned int count_cpus(void)
 	}
 
 	while (!feof(fp)) {
-		fgets(value, LINE_LEN, fp);
+		if (!fgets(value, LINE_LEN, fp))
+			continue;
 		value[LINE_LEN - 1] = '\0';
 		if (strlen(value) < (LINE_LEN - 2))
 			continue;

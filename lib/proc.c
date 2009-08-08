@@ -30,14 +30,22 @@ static int readout_proc_cpufreq(unsigned int cpu, unsigned long *min, unsigned l
 		return -ENODEV;
 
 
-	fgets(value, MAX_LINE_LEN, fp);
+	if (!fgets(value, MAX_LINE_LEN, fp)) {
+		ret = -EIO;
+		goto error;
+	}
+
 	if (strlen(value) > (MAX_LINE_LEN - 10)) {
 		ret = -EIO;
 		goto error;
 	}
 
 	while(!feof(fp)) {
-		fgets(value, MAX_LINE_LEN, fp);
+		if (!fgets(value, MAX_LINE_LEN, fp)) {
+			ret = -EIO;
+			goto error;
+		}
+
 		if (strlen(value) > (MAX_LINE_LEN - 10)) {
 			ret = -EIO;
 			goto error;
@@ -127,7 +135,12 @@ unsigned long proc_get_freq_kernel(unsigned int cpu) {
 	fp = fopen(file,"r");
 	if (!fp)
 		return 0;
-	fgets(value, MAX_LINE_LEN, fp);
+
+	if (!fgets(value, MAX_LINE_LEN, fp)) {
+		fclose(fp);
+		return 0;
+	}
+
 	fclose(fp);
 
 	if (strlen(value) > (MAX_LINE_LEN - 10)) {
