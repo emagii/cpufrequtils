@@ -39,7 +39,7 @@ static void print_help(void) {
 	printf(gettext ("  -g GOV, --governor GOV   new cpufreq governor\n"));
 	printf(gettext ("  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
 	       "                           governor to be available and loaded\n"));
-	printf(gettext ("  -r, --related            Switches all hardware-related CPUs"));
+	printf(gettext ("  -r, --related            Switches all hardware-related CPUs\n"));
 	printf(gettext ("  -h, --help               Prints out this screen\n"));
 	printf("\n");
 	printf(gettext ("Notes:\n"
