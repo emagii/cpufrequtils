@@ -19,30 +19,32 @@
 
 #include "cpufreq.h"
 
-#define _(String) gettext (String)
+#define _(String) gettext(String)
 #define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+#define N_(String) gettext_noop(String)
 
 #define NORM_FREQ_LEN 32
 
-static void print_header(void) {
+static void print_header(void)
+{
         printf(PACKAGE " " VERSION ": cpufreq-set (C) Dominik Brodowski 2004-2009\n");
-	printf(gettext ("Report errors and bugs to %s, please.\n"), PACKAGE_BUGREPORT);
+	printf(gettext("Report errors and bugs to %s, please.\n"), PACKAGE_BUGREPORT);
 }
 
-static void print_help(void) {
-	printf(gettext ("Usage: cpufreq-set [options]\n"));
-	printf(gettext ("Options:\n"));
-	printf(gettext ("  -c CPU, --cpu CPU        number of CPU where cpufreq settings shall be modified\n"));
-	printf(gettext ("  -d FREQ, --min FREQ      new minimum CPU frequency the governor may select\n"));
-	printf(gettext ("  -u FREQ, --max FREQ      new maximum CPU frequency the governor may select\n"));
-	printf(gettext ("  -g GOV, --governor GOV   new cpufreq governor\n"));
-	printf(gettext ("  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
+static void print_help(void)
+{
+	printf(gettext("Usage: cpufreq-set [options]\n"));
+	printf(gettext("Options:\n"));
+	printf(gettext("  -c CPU, --cpu CPU        number of CPU where cpufreq settings shall be modified\n"));
+	printf(gettext("  -d FREQ, --min FREQ      new minimum CPU frequency the governor may select\n"));
+	printf(gettext("  -u FREQ, --max FREQ      new maximum CPU frequency the governor may select\n"));
+	printf(gettext("  -g GOV, --governor GOV   new cpufreq governor\n"));
+	printf(gettext("  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
 	       "                           governor to be available and loaded\n"));
-	printf(gettext ("  -r, --related            Switches all hardware-related CPUs\n"));
-	printf(gettext ("  -h, --help               Prints out this screen\n"));
+	printf(gettext("  -r, --related            Switches all hardware-related CPUs\n"));
+	printf(gettext("  -h, --help               Prints out this screen\n"));
 	printf("\n");
-	printf(gettext ("Notes:\n"
+	printf(gettext("Notes:\n"
 	       "1. Omitting the -c or --cpu argument is equivalent to setting it to zero\n"
 	       "2. The -f FREQ, --freq FREQ parameter cannot be combined with any other parameter\n"
 	       "   except the -c CPU, --cpu CPU parameter\n"
@@ -62,6 +64,17 @@ static struct option set_opts[] = {
 	{ .name="related",	.has_arg=no_argument,		.flag=NULL,	.val='r'},
 };
 
+static void print_error(void)
+{
+	printf(gettext("Error setting new values. Common errors:\n"
+			"- Do you have proper administration rights? (super-user?)\n"
+			"- Is the governor you requested available and modprobed?\n"
+			"- Trying to set an invalid policy?\n"
+			"- Trying to set a specific frequency, but userspace governor is not available,\n"
+			"   for example because of hardware which cannot be set to a specific frequency\n"
+			"   or because the userspace governor isn't loaded?\n"));
+};
+
 struct freq_units {
 	char*		str_unit;
 	int		power_of_ten;
@@ -76,22 +89,25 @@ const struct freq_units def_units[] = {
 	{NULL, 0}
 };
 
-static void print_unknown_arg(void) {
+static void print_unknown_arg(void)
+{
 	print_header();
-	printf(gettext ("invalid or unknown argument\n"));
+	printf(gettext("invalid or unknown argument\n"));
 	print_help();
 }
 
-static unsigned long string_to_frequency(const char* str)
+static unsigned long string_to_frequency(const char *str)
 {
 	char normalized[NORM_FREQ_LEN];
-	struct freq_units const * unit;
-	const char* scan;
-	char* end;
+	const struct freq_units *unit;
+	const char *scan;
+	char *end;
 	unsigned long freq;
 	int power = 0, match_count = 0, i, cp, pad;
 
-	while (*str == '0') str++;
+	while (*str == '0')
+		str++;
+
 	for (scan = str; isdigit(*scan) || *scan == '.'; scan++) {
 		if (*scan == '.' && match_count == 0)
 			match_count = 1;
@@ -104,7 +120,8 @@ static unsigned long string_to_frequency(const char* str)
 		for (unit = def_units; unit->str_unit; unit++) {
 			for (i = 0;
 			     scan[i] && tolower(scan[i]) == unit->str_unit[i];
-			     ++i);
+			     ++i)
+				continue;
 			if (scan[i])
 				continue;
 			match_count++;
@@ -115,7 +132,9 @@ static unsigned long string_to_frequency(const char* str)
 	}
 
 	/* count the number of digits to be copied */
-	for (cp = 0; isdigit(str[cp]); cp++);
+	for (cp = 0; isdigit(str[cp]); cp++)
+		continue;
+
 	if (str[cp] == '.') {
 		while (power > -1 && isdigit(str[cp+1]))
 			cp++, power--;
@@ -155,7 +174,8 @@ static unsigned long string_to_frequency(const char* str)
 	}
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	extern char *optarg;
 	extern int optind, opterr, optopt;
 	int ret = 0, cont = 1;
@@ -177,7 +197,6 @@ int main(int argc, char **argv) {
 		.first = &single_cpu,
 	};
 	struct cpufreq_affected_cpus *cpus = NULL;
-	struct cpufreq_affected_cpus *this_cpu = NULL;
 
 	setlocale(LC_ALL, "");
 	textdomain (PACKAGE);
@@ -264,16 +283,17 @@ int main(int argc, char **argv) {
 	}
 
 	if (freq_is_set) {
-		if ((min_is_set) || (max_is_set) || (gov_is_set))
-			printf(gettext ("the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
+		if ((min_is_set) || (max_is_set) || (gov_is_set)) {
+			printf(gettext("the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
 					"-g/--governor parameters\n"));
-		return -EINVAL;
+			return -EINVAL;
+		}
 	}
 
 	double_parm = min_is_set + max_is_set + gov_is_set + freq_is_set;
 
 	if (!double_parm) {
-		printf(gettext ("At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
+		printf(gettext("At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
 				"-g/--governor must be passed\n"));
 		return -EINVAL;
 	}
@@ -288,9 +308,8 @@ int main(int argc, char **argv) {
 		cpus->cpu = cpu;
 	}
 
-	this_cpu = cpus;
 	while (1) {
-		cpu = this_cpu->cpu;
+		cpu = cpus->cpu;
 
 		if (freq_is_set) {
 			ret = cpufreq_set_frequency(cpu, freq);
@@ -308,8 +327,9 @@ int main(int argc, char **argv) {
 			struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
 			struct cpufreq_policy new_pol;
 			if (!cur_pol) {
-				printf(gettext ("wrong, unknown or unhandled CPU?\n"));
-				return -EINVAL;
+				printf(gettext("wrong, unknown or unhandled CPU?\n"));
+				ret = -EINVAL;
+				break;
 			}
 
 			if (min_is_set)
@@ -335,22 +355,17 @@ int main(int argc, char **argv) {
 		if (ret)
 			break;
 
-		this_cpu = this_cpu->next;
-		if (!this_cpu)
+		if (!cpus->next)
 			break;
+
+		cpus = cpus->next;
 	}
 
-	if (cpus != &single_cpu)
-		cpufreq_put_related_cpus(cpus);
+	if (cpus->first != &single_cpu)
+		cpufreq_put_related_cpus(cpus->first);
 
-	if (ret) {
-		printf(gettext ("Error setting new values. Common errors:\n"
-		       "- Do you have proper administration rights? (super-user?)\n"
-		       "- Is the governor you requested available and modprobed?\n"
-		       "- Trying to set an invalid policy?\n"
-		       "- Trying to set a specific frequency, but userspace governor is not available,\n"
-		       "   for example because of hardware which cannot be set to a specific frequency\n"
-		       "   or because the userspace governor isn't loaded?\n"));
-	}
-	return (ret);
+	if (ret)
+		print_error();
+
+	return ret;
 }
