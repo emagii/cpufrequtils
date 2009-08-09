@@ -179,14 +179,16 @@ int main(int argc, char **argv)
 	extern char *optarg;
 	extern int optind, opterr, optopt;
 	int ret = 0, cont = 1;
-	unsigned long min = 0;
-	unsigned long max = 0;
 	unsigned long freq = 0;
 	char gov[20];
-	char *new_gov;
 	int double_parm = 0;
 	int related = 0;
 	int policychange = 0;
+	struct cpufreq_policy new_pol = {
+		.min = 0,
+		.max = 0,
+		.governor = NULL,
+	};
 	struct cpufreq_affected_cpus single_cpu = {
 		.cpu = 0,
 		.next = NULL,
@@ -226,21 +228,21 @@ int main(int argc, char **argv)
                         }
 			break;
 		case 'd':
-			if (min)
+			if (new_pol.min)
 				double_parm++;
 			policychange++;
-			min = string_to_frequency(optarg);
-			if (min == 0) {
+			new_pol.min = string_to_frequency(optarg);
+			if (new_pol.min == 0) {
 				print_unknown_arg();
 				return -EINVAL;
 			}
 			break;
 		case 'u':
-			if (max)
+			if (new_pol.max)
 				double_parm++;
 			policychange++;
-			max = string_to_frequency(optarg);
-			if (max == 0) {
+			new_pol.max = string_to_frequency(optarg);
+			if (new_pol.max == 0) {
 				print_unknown_arg();
 				return -EINVAL;
 			}
@@ -255,7 +257,7 @@ int main(int argc, char **argv)
 			}
 			break;
 		case 'g':
-			if (new_gov)
+			if (new_pol.governor)
 				double_parm++;
 			policychange++;
 			if ((strlen(optarg) < 3) || (strlen(optarg) > 18)) {
@@ -266,7 +268,7 @@ int main(int argc, char **argv)
 				print_unknown_arg();
 				return -EINVAL;
                         }
-			new_gov = gov;
+			new_pol.governor = gov;
 			break;
 		}
 	} while(cont);
@@ -305,15 +307,14 @@ int main(int argc, char **argv)
 		}
 
 		if (policychange == 1) {
-			if (min)
-				ret = cpufreq_modify_policy_min(cpus->cpu, min);
-			else if (max)
-				ret = cpufreq_modify_policy_max(cpus->cpu, max);
-			else if (new_gov)
-				ret = cpufreq_modify_policy_governor(cpus->cpu, new_gov);
+			if (new_pol.min)
+				ret = cpufreq_modify_policy_min(cpus->cpu, new_pol.min);
+			else if (new_pol.max)
+				ret = cpufreq_modify_policy_max(cpus->cpu, new_pol.max);
+			else if (new_pol.governor)
+				ret = cpufreq_modify_policy_governor(cpus->cpu, new_pol.governor);
 		} else {
 			struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpus->cpu);
-			struct cpufreq_policy new_pol;
 
 			if (!cur_pol) {
 				printf(gettext("wrong, unknown or unhandled CPU?\n"));
@@ -321,23 +322,18 @@ int main(int argc, char **argv)
 				break;
 			}
 
-			if (min)
-				new_pol.min = min;
-			else
+			if (!new_pol.min)
 				new_pol.min = cur_pol->min;
 
-			if (max)
-				new_pol.max = max;
-			else
+			if (!new_pol.max)
 				new_pol.max = cur_pol->max;
 
-			new_pol.governor = new_gov;
-			if (!new_gov)
-				strncpy(gov, cur_pol->governor, 20);
-
-			cpufreq_put_policy(cur_pol);
+			if (!new_pol.governor)
+				new_pol.governor = cur_pol->governor;
 
 			ret = cpufreq_set_policy(cpus->cpu, &new_pol);
+
+			cpufreq_put_policy(cur_pol);
 		}
 
 	next:
