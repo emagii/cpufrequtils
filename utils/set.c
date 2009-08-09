@@ -174,6 +174,58 @@ static unsigned long string_to_frequency(const char *str)
 	}
 }
 
+static int do_new_policy(unsigned int cpu, struct cpufreq_policy *new_pol)
+{
+	struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
+	int ret;
+
+	if (!cur_pol) {
+		printf(gettext("wrong, unknown or unhandled CPU?\n"));
+		return -EINVAL;
+	}
+
+	if (!new_pol->min)
+		new_pol->min = cur_pol->min;
+
+	if (!new_pol->max)
+		new_pol->max = cur_pol->max;
+
+	if (!new_pol->governor)
+		new_pol->governor = cur_pol->governor;
+
+	ret = cpufreq_set_policy(cpu, new_pol);
+
+	cpufreq_put_policy(cur_pol);
+
+	return ret;
+}
+
+	
+static int do_one_cpu(unsigned int cpu, struct cpufreq_policy *new_pol,
+		unsigned long freq, unsigned int pc)
+{
+	switch (pc) {
+	case 0:
+		return cpufreq_set_frequency(cpu, freq);
+
+	case 1:
+		/* if only one value of a policy is to be changed, we can
+		 * use a "fast path".
+		 */
+		if (new_pol->min)
+			return cpufreq_modify_policy_min(cpu, new_pol->min);
+		else if (new_pol->max)
+			return cpufreq_modify_policy_max(cpu, new_pol->max);
+		else if (new_pol->governor)
+			return cpufreq_modify_policy_governor(cpu, new_pol->governor);
+
+	default:
+		/* slow path */
+		return do_new_policy(cpu, new_pol);
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	extern char *optarg;
@@ -300,43 +352,9 @@ int main(int argc, char **argv)
 	if (related)
 		cpus = cpufreq_get_related_cpus(cpus->cpu);
 
+	/* loop over CPUs */
 	while (1) {
-		if (freq) {
-			ret = cpufreq_set_frequency(cpus->cpu, freq);
-			goto next;
-		}
-
-		if (policychange == 1) {
-			if (new_pol.min)
-				ret = cpufreq_modify_policy_min(cpus->cpu, new_pol.min);
-			else if (new_pol.max)
-				ret = cpufreq_modify_policy_max(cpus->cpu, new_pol.max);
-			else if (new_pol.governor)
-				ret = cpufreq_modify_policy_governor(cpus->cpu, new_pol.governor);
-		} else {
-			struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpus->cpu);
-
-			if (!cur_pol) {
-				printf(gettext("wrong, unknown or unhandled CPU?\n"));
-				ret = -EINVAL;
-				break;
-			}
-
-			if (!new_pol.min)
-				new_pol.min = cur_pol->min;
-
-			if (!new_pol.max)
-				new_pol.max = cur_pol->max;
-
-			if (!new_pol.governor)
-				new_pol.governor = cur_pol->governor;
-
-			ret = cpufreq_set_policy(cpus->cpu, &new_pol);
-
-			cpufreq_put_policy(cur_pol);
-		}
-
-	next:
+		ret = do_one_cpu(cpus->cpu, &new_pol, freq, policychange);
 		if (ret)
 			break;
 
@@ -346,6 +364,7 @@ int main(int argc, char **argv)
 		cpus = cpus->next;
 	}
 
+	/* cleanup */
 	if (cpus->first != &single_cpu)
 		cpufreq_put_related_cpus(cpus->first);
 
