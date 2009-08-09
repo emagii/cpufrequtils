@@ -183,13 +183,10 @@ int main(int argc, char **argv)
 	unsigned long max = 0;
 	unsigned long freq = 0;
 	char gov[20];
-	int freq_is_set = 0;
-	int min_is_set = 0;
-	int max_is_set = 0;
-	int gov_is_set = 0;
-	int cpu_is_set = 0;
+	char *new_gov;
 	int double_parm = 0;
 	int related = 0;
+	int policychange = 0;
 	struct cpufreq_affected_cpus single_cpu = {
 		.cpu = 0,
 		.next = NULL,
@@ -220,18 +217,18 @@ int main(int argc, char **argv)
 			related++;
 			break;
 		case 'c':
-			if (cpu_is_set)
+			if (cpus)
 				double_parm++;
-			cpu_is_set++;
+			cpus = &single_cpu;
 			if ((sscanf(optarg, "%d ", &single_cpu.cpu)) != 1) {
 				print_unknown_arg();
 				return -EINVAL;
                         }
 			break;
 		case 'd':
-			if (min_is_set)
+			if (min)
 				double_parm++;
-			min_is_set++;
+			policychange++;
 			min = string_to_frequency(optarg);
 			if (min == 0) {
 				print_unknown_arg();
@@ -239,9 +236,9 @@ int main(int argc, char **argv)
 			}
 			break;
 		case 'u':
-			if (max_is_set)
+			if (max)
 				double_parm++;
-			max_is_set++;
+			policychange++;
 			max = string_to_frequency(optarg);
 			if (max == 0) {
 				print_unknown_arg();
@@ -249,9 +246,8 @@ int main(int argc, char **argv)
 			}
 			break;
 		case 'f':
-			if (freq_is_set)
+			if (freq)
 				double_parm++;
-			freq_is_set++;
 			freq = string_to_frequency(optarg);
 			if (freq == 0) {
 				print_unknown_arg();
@@ -259,9 +255,9 @@ int main(int argc, char **argv)
 			}
 			break;
 		case 'g':
-			if (gov_is_set)
+			if (new_gov)
 				double_parm++;
-			gov_is_set++;
+			policychange++;
 			if ((strlen(optarg) < 3) || (strlen(optarg) > 18)) {
 				print_unknown_arg();
 				return -EINVAL;
@@ -270,6 +266,7 @@ int main(int argc, char **argv)
 				print_unknown_arg();
 				return -EINVAL;
                         }
+			new_gov = gov;
 			break;
 		}
 	} while(cont);
@@ -281,17 +278,13 @@ int main(int argc, char **argv)
 		return -EINVAL;
 	}
 
-	if (freq_is_set) {
-		if ((min_is_set) || (max_is_set) || (gov_is_set)) {
-			printf(gettext("the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
-					"-g/--governor parameters\n"));
-			return -EINVAL;
-		}
+	if (freq && policychange) {
+		printf(gettext("the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
+				"-g/--governor parameters\n"));
+		return -EINVAL;
 	}
 
-	double_parm = min_is_set + max_is_set + gov_is_set + freq_is_set;
-
-	if (!double_parm) {
+	if (!freq && !policychange) {
 		printf(gettext("At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
 				"-g/--governor must be passed\n"));
 		return -EINVAL;
@@ -299,25 +292,25 @@ int main(int argc, char **argv)
 
 
 	/* which CPUs shall we modify? */
-	if (related)
-		cpus = cpufreq_get_related_cpus(cpus->cpu);
-
 	if (!cpus)
 		cpus = &single_cpu;
 
+	if (related)
+		cpus = cpufreq_get_related_cpus(cpus->cpu);
+
 	while (1) {
-		if (freq_is_set) {
+		if (freq) {
 			ret = cpufreq_set_frequency(cpus->cpu, freq);
 			goto next;
 		}
 
-		if (double_parm == 1) {
-			if (min_is_set)
+		if (policychange == 1) {
+			if (min)
 				ret = cpufreq_modify_policy_min(cpus->cpu, min);
-			else if (max_is_set)
+			else if (max)
 				ret = cpufreq_modify_policy_max(cpus->cpu, max);
-			else if (gov_is_set)
-				ret = cpufreq_modify_policy_governor(cpus->cpu, gov);
+			else if (new_gov)
+				ret = cpufreq_modify_policy_governor(cpus->cpu, new_gov);
 		} else {
 			struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpus->cpu);
 			struct cpufreq_policy new_pol;
@@ -328,18 +321,18 @@ int main(int argc, char **argv)
 				break;
 			}
 
-			if (min_is_set)
+			if (min)
 				new_pol.min = min;
 			else
 				new_pol.min = cur_pol->min;
 
-			if (max_is_set)
+			if (max)
 				new_pol.max = max;
 			else
 				new_pol.max = cur_pol->max;
 
-			new_pol.governor = gov;
-			if (!gov_is_set)
+			new_pol.governor = new_gov;
+			if (!new_gov)
 				strncpy(gov, cur_pol->governor, 20);
 
 			cpufreq_put_policy(cur_pol);
