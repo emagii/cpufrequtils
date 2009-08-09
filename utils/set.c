@@ -179,7 +179,6 @@ int main(int argc, char **argv)
 	extern char *optarg;
 	extern int optind, opterr, optopt;
 	int ret = 0, cont = 1;
-	unsigned int cpu = 0;
 	unsigned long min = 0;
 	unsigned long max = 0;
 	unsigned long freq = 0;
@@ -224,7 +223,7 @@ int main(int argc, char **argv)
 			if (cpu_is_set)
 				double_parm++;
 			cpu_is_set++;
-			if ((sscanf(optarg, "%d ", &cpu)) != 1) {
+			if ((sscanf(optarg, "%d ", &single_cpu.cpu)) != 1) {
 				print_unknown_arg();
 				return -EINVAL;
                         }
@@ -301,31 +300,28 @@ int main(int argc, char **argv)
 
 	/* which CPUs shall we modify? */
 	if (related)
-		cpus = cpufreq_get_related_cpus(cpu);
+		cpus = cpufreq_get_related_cpus(cpus->cpu);
 
-	if (!cpus) {
+	if (!cpus)
 		cpus = &single_cpu;
-		cpus->cpu = cpu;
-	}
 
 	while (1) {
-		cpu = cpus->cpu;
-
 		if (freq_is_set) {
-			ret = cpufreq_set_frequency(cpu, freq);
+			ret = cpufreq_set_frequency(cpus->cpu, freq);
 			goto next;
 		}
 
 		if (double_parm == 1) {
 			if (min_is_set)
-				ret = cpufreq_modify_policy_min(cpu, min);
+				ret = cpufreq_modify_policy_min(cpus->cpu, min);
 			else if (max_is_set)
-				ret = cpufreq_modify_policy_max(cpu, max);
+				ret = cpufreq_modify_policy_max(cpus->cpu, max);
 			else if (gov_is_set)
-				ret = cpufreq_modify_policy_governor(cpu, gov);
+				ret = cpufreq_modify_policy_governor(cpus->cpu, gov);
 		} else {
-			struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpu);
+			struct cpufreq_policy *cur_pol = cpufreq_get_policy(cpus->cpu);
 			struct cpufreq_policy new_pol;
+
 			if (!cur_pol) {
 				printf(gettext("wrong, unknown or unhandled CPU?\n"));
 				ret = -EINVAL;
@@ -348,7 +344,7 @@ int main(int argc, char **argv)
 
 			cpufreq_put_policy(cur_pol);
 
-			ret = cpufreq_set_policy(cpu, &new_pol);
+			ret = cpufreq_set_policy(cpus->cpu, &new_pol);
 		}
 
 	next:
