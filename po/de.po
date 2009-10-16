@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpufrequtils 006\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-08 18:41+0200\n"
+"POT-Creation-Date: 2009-08-09 11:53+0200\n"
 "PO-Revision-Date: 2009-08-08 17:18+0100\n"
 "Last-Translator:  <linux@dominikbrodowski.net>\n"
 "Language-Team: NONE\n"
@@ -115,7 +115,7 @@ msgstr "  (verifiziert durch Nachfrage bei der Hardware)"
 msgid "  cpufreq stats: "
 msgstr "  Statistik:"
 
-#: utils/info.c:440 utils/set.c:30
+#: utils/info.c:440 utils/set.c:31
 #, c-format
 msgid "Report errors and bugs to %s, please.\n"
 msgstr "Bitte melden Sie Fehler an %s.\n"
@@ -125,7 +125,7 @@ msgstr "Bitte melden Sie Fehler an %s.\n"
 msgid "Usage: cpufreq-info [options]\n"
 msgstr "Aufruf: cpufreq-info [Optionen]\n"
 
-#: utils/info.c:445 utils/set.c:35
+#: utils/info.c:445 utils/set.c:37
 #, c-format
 msgid "Options:\n"
 msgstr "Optionen:\n"
@@ -286,17 +286,17 @@ msgstr ""
 "Man kann nicht mehr als einen --cpu-Parameter und/oder mehr als einen\n"
 "informationsspezifischen Parameter gleichzeitig angeben\n"
 
-#: utils/info.c:582 utils/set.c:81
+#: utils/info.c:582 utils/set.c:95
 #, c-format
 msgid "invalid or unknown argument\n"
 msgstr "unbekannter oder falscher Parameter\n"
 
-#: utils/set.c:34
+#: utils/set.c:36
 #, c-format
 msgid "Usage: cpufreq-set [options]\n"
 msgstr "Aufruf: cpufreq-set [Optionen]\n"
 
-#: utils/set.c:36
+#: utils/set.c:38
 #, c-format
 msgid ""
 "  -c CPU, --cpu CPU        number of CPU where cpufreq settings shall be "
@@ -305,7 +305,7 @@ msgstr ""
 "  -c CPU, --cpu CPU        Nummer der CPU, deren Taktfrequenz-Einstellung\n"
 "                           werden soll\n"
 
-#: utils/set.c:37
+#: utils/set.c:39
 #, c-format
 msgid ""
 "  -d FREQ, --min FREQ      new minimum CPU frequency the governor may "
@@ -314,7 +314,7 @@ msgstr ""
 "  -d FREQ, --min FREQ      neue minimale Taktfrequenz, die der Regler\n"
 "                           auswählen darf\n"
 
-#: utils/set.c:38
+#: utils/set.c:40
 #, c-format
 msgid ""
 "  -u FREQ, --max FREQ      new maximum CPU frequency the governor may "
@@ -323,12 +323,12 @@ msgstr ""
 "  -u FREQ, --max FREQ      neue maximale Taktfrequenz, die der Regler\n"
 "                           auswählen darf\n"
 
-#: utils/set.c:39
+#: utils/set.c:41
 #, c-format
 msgid "  -g GOV, --governor GOV   new cpufreq governor\n"
 msgstr "  -g GOV, --governors GOV  wechsle zu Regler GOV\n"
 
-#: utils/set.c:40
+#: utils/set.c:42
 #, c-format
 msgid ""
 "  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
@@ -337,19 +337,19 @@ msgstr ""
 "  -f FREQ, --freq FREQ     setze exakte Taktfrequenz. Benötigt den Regler\n"
 "                           'userspace'.\n"
 
-#: utils/set.c:42
+#: utils/set.c:44
 #, c-format
 msgid "  -r, --related            Switches all hardware-related CPUs\n"
 msgstr ""
 "  -r, --related            Setze Werte für alle CPUs, deren Taktfrequenz\n"
 "                           hardwarebedingt identisch ist.\n"
 
-#: utils/set.c:43
+#: utils/set.c:45
 #, c-format
 msgid "  -h, --help               Prints out this screen\n"
 msgstr "  -h, --help               Gibt diese Kurzübersicht aus\n"
 
-#: utils/set.c:45
+#: utils/set.c:47
 #, c-format
 msgid ""
 "Notes:\n"
@@ -371,31 +371,7 @@ msgstr ""
 "   die Einheit angegeben werden. (Bsp: 1GHz )\n"
 "   (FREQuenz in kHz =^ MHz * 1000 =^ GHz * 1000000).\n"
 
-#: utils/set.c:268
-#, c-format
-msgid ""
-"the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
-"-g/--governor parameters\n"
-msgstr ""
-"Der -f bzw. --freq-Parameter kann nicht mit den Parametern -d/--min, -u/--"
-"max\n"
-"oder -g/--governor kombiniert werden\n"
-
-#: utils/set.c:276
-#, c-format
-msgid ""
-"At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
-"-g/--governor must be passed\n"
-msgstr ""
-"Es muss mindestens ein Parameter aus -f/--freq, -d/--min, -u/--max oder\n"
-"-g/--governor angegeben werden.\n"
-
-#: utils/set.c:311
-#, c-format
-msgid "wrong, unknown or unhandled CPU?\n"
-msgstr "unbekannte oder nicht regelbare CPU\n"
-
-#: utils/set.c:347
+#: utils/set.c:69
 #, c-format
 msgid ""
 "Error setting new values. Common errors:\n"
@@ -414,3 +390,27 @@ msgstr ""
 "- die angegebene Taktik ist inkorrekt\n"
 "- eine spezifische Frequenz wurde angegeben, aber der Regler 'userspace'\n"
 "  kann entweder hardwarebedingt nicht genutzt werden oder ist nicht geladen\n"
+
+#: utils/set.c:183
+#, c-format
+msgid "wrong, unknown or unhandled CPU?\n"
+msgstr "unbekannte oder nicht regelbare CPU\n"
+
+#: utils/set.c:336
+#, c-format
+msgid ""
+"the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
+"-g/--governor parameters\n"
+msgstr ""
+"Der -f bzw. --freq-Parameter kann nicht mit den Parametern -d/--min, -u/--"
+"max\n"
+"oder -g/--governor kombiniert werden\n"
+
+#: utils/set.c:342
+#, c-format
+msgid ""
+"At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
+"-g/--governor must be passed\n"
+msgstr ""
+"Es muss mindestens ein Parameter aus -f/--freq, -d/--min, -u/--max oder\n"
+"-g/--governor angegeben werden.\n"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpufrequtils 0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-08 18:46+0200\n"
+"POT-Creation-Date: 2009-08-09 11:53+0200\n"
 "PO-Revision-Date: 2009-08-15 12:00+0900\n"
 "Last-Translator: Mattia Dongili <malattia@gmail.com>\n"
 "Language-Team: NONE\n"
@@ -112,7 +112,7 @@ msgstr " (ottenuta da una chiamata diretta all'hardware)"
 msgid "  cpufreq stats: "
 msgstr " statistiche cpufreq:"
 
-#: utils/info.c:440 utils/set.c:30
+#: utils/info.c:440 utils/set.c:31
 #, c-format
 msgid "Report errors and bugs to %s, please.\n"
 msgstr "Per favore, comunicare errori e malfunzionamenti a %s.\n"
@@ -122,7 +122,7 @@ msgstr "Per favore, comunicare errori e malfunzionamenti a %s.\n"
 msgid "Usage: cpufreq-info [options]\n"
 msgstr "Uso: cpufreq-info [opzioni]\n"
 
-#: utils/info.c:445 utils/set.c:35
+#: utils/info.c:445 utils/set.c:37
 #, c-format
 msgid "Options:\n"
 msgstr "Opzioni:\n"
@@ -232,8 +232,8 @@ msgid ""
 "  -m, --human          human-readable output for the -f, -w, -s and -y "
 "parameters\n"
 msgstr ""
-"  -m, --human          formatta l'output delle opzioni -f, -w, -s e -y "
-"in maniera\n"
+"  -m, --human          formatta l'output delle opzioni -f, -w, -s e -y in "
+"maniera\n"
 "                       leggibile da un essere umano\n"
 
 #: utils/info.c:464
@@ -279,17 +279,17 @@ msgstr ""
 "Non è possibile specificare più di una volta l'opzione --cpu e/o\n"
 "specificare più di un parametro di output specifico\n"
 
-#: utils/info.c:582 utils/set.c:81
+#: utils/info.c:582 utils/set.c:95
 #, c-format
 msgid "invalid or unknown argument\n"
 msgstr "opzione sconosciuta o non valida\n"
 
-#: utils/set.c:34
+#: utils/set.c:36
 #, c-format
 msgid "Usage: cpufreq-set [options]\n"
 msgstr "Uso: cpufreq-set [opzioni]\n"
 
-#: utils/set.c:36
+#: utils/set.c:38
 #, c-format
 msgid ""
 "  -c CPU, --cpu CPU        number of CPU where cpufreq settings shall be "
@@ -298,7 +298,7 @@ msgstr ""
 "  -c CPU, --cpu CPU        numero di CPU per la quale modificare le "
 "impostazioni\n"
 
-#: utils/set.c:37
+#: utils/set.c:39
 #, c-format
 msgid ""
 "  -d FREQ, --min FREQ      new minimum CPU frequency the governor may "
@@ -307,7 +307,7 @@ msgstr ""
 "  -d FREQ, --min FREQ      la nuova frequenza minima che il gestore cpufreq "
 "può scegliere\n"
 
-#: utils/set.c:38
+#: utils/set.c:40
 #, c-format
 msgid ""
 "  -u FREQ, --max FREQ      new maximum CPU frequency the governor may "
@@ -316,12 +316,12 @@ msgstr ""
 "  -u FREQ, --max FREQ      la nuova frequenza massima che il gestore cpufreq "
 "può scegliere\n"
 
-#: utils/set.c:39
+#: utils/set.c:41
 #, c-format
 msgid "  -g GOV, --governor GOV   new cpufreq governor\n"
 msgstr "  -g GOV, --governor GOV   nuovo gestore cpufreq\n"
 
-#: utils/set.c:40
+#: utils/set.c:42
 #, c-format
 msgid ""
 "  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
@@ -331,18 +331,18 @@ msgstr ""
 "                           È necessario che il gestore userspace sia "
 "disponibile e caricato\n"
 
-#: utils/set.c:42
+#: utils/set.c:44
 #, c-format
 msgid "  -r, --related            Switches all hardware-related CPUs\n"
-msgstr "  -r, --related            Modifica tutte le CPU coordinate dall'"
-"hardware\n"
+msgstr ""
+"  -r, --related            Modifica tutte le CPU coordinate dall'hardware\n"
 
-#: utils/set.c:43
+#: utils/set.c:45
 #, c-format
 msgid "  -h, --help               Prints out this screen\n"
 msgstr "  -h, --help               Stampa questa schermata\n"
 
-#: utils/set.c:45
+#: utils/set.c:47
 #, c-format
 msgid ""
 "Notes:\n"
@@ -364,30 +364,7 @@ msgstr ""
 "   postponendo l'unità di misura al valore senza nessuno spazio fra loro\n"
 "   (FREQuenza in kHz =^ Hz * 0.001 =^ MHz * 1000 =^ GHz * 1000000).\n"
 
-#: utils/set.c:268
-#, c-format
-msgid ""
-"the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
-"-g/--governor parameters\n"
-msgstr ""
-"l'opzione -f/--freq non può venire combinata con i parametri\n"
-" -d/--min, -u/--max o -g/--governor\n"
-
-#: utils/set.c:276
-#, c-format
-msgid ""
-"At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
-"-g/--governor must be passed\n"
-msgstr ""
-"Almeno una delle opzioni -f/--freq, -d/--min, -u/--max, e -g/--governor\n"
-"deve essere specificata\n"
-
-#: utils/set.c:311
-#, c-format
-msgid "wrong, unknown or unhandled CPU?\n"
-msgstr "CPU errata, sconosciuta o non gestita?\n"
-
-#: utils/set.c:347
+#: utils/set.c:69
 #, c-format
 msgid ""
 "Error setting new values. Common errors:\n"
@@ -409,6 +386,29 @@ msgstr ""
 "  userspace non è disponibile, per esempio a causa dell'hardware\n"
 "  che non supporta frequenze fisse o a causa del fatto che\n"
 "  il gestore userspace non è caricato?\n"
+
+#: utils/set.c:183
+#, c-format
+msgid "wrong, unknown or unhandled CPU?\n"
+msgstr "CPU errata, sconosciuta o non gestita?\n"
+
+#: utils/set.c:336
+#, c-format
+msgid ""
+"the -f/--freq parameter cannot be combined with -d/--min, -u/--max or\n"
+"-g/--governor parameters\n"
+msgstr ""
+"l'opzione -f/--freq non può venire combinata con i parametri\n"
+" -d/--min, -u/--max o -g/--governor\n"
+
+#: utils/set.c:342
+#, c-format
+msgid ""
+"At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
+"-g/--governor must be passed\n"
+msgstr ""
+"Almeno una delle opzioni -f/--freq, -d/--min, -u/--max, e -g/--governor\n"
+"deve essere specificata\n"
 
 #, fuzzy
 #~ msgid "  CPUs which coordinate software frequency requirements: "
