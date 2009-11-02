@@ -2,6 +2,7 @@
 build/ccdv
 cpufreq-info
 cpufreq-set
+cpufreq-aperf
 lib/.libs
 lib/cpufreq.lo
 lib/cpufreq.o
@@ -14,3 +15,4 @@ po/cpufrequtils.pot
 po/*.gmo
 utils/cpufreq-info.o
 utils/cpufreq-set.o
+utils/cpufreq-aperf.o

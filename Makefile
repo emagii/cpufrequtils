@@ -205,7 +205,7 @@ cpufreq-%: libcpufreq.la $(UTIL_OBJS)
 	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I./lib/ -L. -L./.libs/ -lcpufreq -o $@ utils/$@.o
 	$(QUIET) $(STRIPCMD) $@
 
-utils: cpufreq-info cpufreq-set
+utils: cpufreq-info cpufreq-set cpufreq-aperf
 
 po/$(PACKAGE).pot: $(UTIL_OBJS)
 	@xgettext --default-domain=$(PACKAGE) --add-comments \
@@ -234,7 +234,7 @@ clean:
 	 | xargs rm -f
 	-rm -rf lib/.libs
 	-rm -rf .libs
-	-rm -f cpufreq-info cpufreq-set
+	-rm -f cpufreq-info cpufreq-set cpufreq-aperf
 	-rm -f build/ccdv
 	-rm -rf po/*.gmo po/*.pot
 	make -C bench clean
@@ -250,6 +250,7 @@ install-tools:
 	$(INSTALL) -d $(DESTDIR)${bindir}
 	$(INSTALL_PROGRAM) cpufreq-set $(DESTDIR)${bindir}/cpufreq-set
 	$(INSTALL_PROGRAM) cpufreq-info $(DESTDIR)${bindir}/cpufreq-info
+	$(INSTALL_PROGRAM) cpufreq-aperf $(DESTDIR)${bindir}/cpufreq-aperf
 
 install-man:
 	$(INSTALL_DATA) -D man/cpufreq-set.1 $(DESTDIR)${mandir}/man1/cpufreq-set.1
@@ -273,6 +274,7 @@ uninstall:
 	- rm -f $(DESTDIR)${includedir}/cpufreq.h
 	- rm -f $(DESTDIR)${bindir}/cpufreq-set
 	- rm -f $(DESTDIR)${bindir}/cpufreq-info
+	- rm -f $(DESTDIR)${bindir}/cpufreq-aperf
 	- rm -f $(DESTDIR)${mandir}/man1/cpufreq-set.1
 	- rm -f $(DESTDIR)${mandir}/man1/cpufreq-info.1
 	- for HLANG in $(LANGUAGES); do \
