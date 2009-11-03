@@ -1,7 +1,7 @@
 LIBS = -L../.libs/ -lm -lcpufreq
 
 OBJS = main.o parse.o system.o benchmark.o
-CFLAGS += -D_GNU_SOURCE -I../lib
+CFLAGS += -D_GNU_SOURCE -I../lib -DDEFAULT_CONFIG_FILE=\"$(confdir)/cpufreq-bench.conf\"
 
 ifeq ($(strip $(V)),false)
 	CC=@../build/ccdv gcc

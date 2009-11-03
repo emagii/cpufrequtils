@@ -134,6 +134,11 @@ struct config *prepare_default_config()
 	strncpy(config->governor, "ondemand", 8);
 
 	config->output = stdout;
+
+#ifdef DEFAULT_CONFIG_FILE
+	if (prepare_config(DEFAULT_CONFIG_FILE, config))
+		return NULL;
+#endif
 	return config;
 }
 
@@ -142,21 +147,26 @@ struct config *prepare_default_config()
  *
  * @param path config file name
  *
- * @retval parsed benchmark config
+ * @retval 1 on error
+ * @retval 0 on success
  **/
 
-struct config *prepare_config(const char *path)
+int prepare_config(const char *path, struct config *config)
 {
 	size_t len = 0;
 	char *opt, *val, *line = NULL;
 	FILE *configfile = fopen(path, "r");
-	struct config *config = malloc(sizeof(struct config));
+
+	if (config == NULL) {
+		fprintf(stderr, "error: config is NULL\n");
+		return 1;
+	}
 
 	if (configfile == NULL) {
 		perror("fopen");
                 fprintf(stderr, "error: unable to read configfile\n");
 		free(config);
-		return NULL;
+		return 1;
 	}
 
 	while (getline(&line, &len, configfile) != -1)
@@ -208,5 +218,5 @@ struct config *prepare_config(const char *path)
 	free(opt);
 	free(val);
 
-	return config;
+	return 0;
 }

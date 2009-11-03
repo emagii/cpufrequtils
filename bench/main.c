@@ -152,8 +152,7 @@ int main(int argc, char **argv)
 			dprintf("user sleep_step -> %s\n", optarg);
 			break;
 		case 'f':
-			config = prepare_config(optarg);
-			if (config == NULL)
+			if (prepare_config(optarg, config))
 				return EXIT_FAILURE;
 			break;
 		case 'v':

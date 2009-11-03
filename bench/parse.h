@@ -43,6 +43,6 @@ enum sched_prio string_to_prio(const char *str);
 
 FILE *prepare_output(const char *dir);
 
-struct config *prepare_config(const char *path);
+int prepare_config(const char *path, struct config *config);
 struct config *prepare_default_config();
 

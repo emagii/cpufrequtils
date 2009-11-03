@@ -227,7 +227,7 @@ update-gmo: po/$(PACKAGE).pot
 	done;
 
 compile-bench: libcpufreq
-	@V=$(V) make -C bench
+	@V=$(V) confdir=$(confdir) make -C bench
 
 clean:
 	-find . \( -not -type d \) -and \( -name '*~' -o -name '*.[oas]' -o -name '*.l[oas]' \) -type f -print \
