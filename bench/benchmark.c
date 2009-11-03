@@ -100,13 +100,13 @@ void start_benchmark(struct config *config)
 		if (set_cpufreq_governor("performance", config->cpu) != 0)
 			return;
 
-		printf("_round %i: doing %u cycles with %u calculations for %lius\n",
-			_round + 1, config->cycles, calculations, load_time);
-
 		/* calibrate the calculation time. the resulting calculation
 		 * _rounds should produce a load which matches the configured
 		 * load time */
 		calculations = calculate_timespace(load_time);
+
+		printf("_round %i: doing %u cycles with %u calculations for %lius\n",
+			_round + 1, config->cycles, calculations, load_time);
 
 		fprintf(config->output, "%li %li %li %u ",
 					load_time, sleep_time, load_time / calculations, calculations);
