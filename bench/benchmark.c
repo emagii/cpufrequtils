@@ -111,8 +111,8 @@ void start_benchmark(struct config *config)
 			       " for %lius\n", _round + 1, config->cycles,
 			       calculations, load_time);
 
-		fprintf(config->output, "%li %li %li %u ",
-					load_time, sleep_time, load_time / calculations, calculations);
+		fprintf(config->output, "%u %li %li ",
+			_round, load_time, sleep_time);
 
 		if (config->verbose) {
 			printf("avarage: %lius, rps:%li\n", load_time / calculations, 1000000 * calculations / load_time);
