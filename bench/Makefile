@@ -19,7 +19,7 @@ install:
 	mkdir -p $(DESTDIR)/$(docdir)
 	mkdir -p $(DESTDIR)/$(confdir)
 	install -m 755 cpufreq-bench $(DESTDIR)/$(sbindir)/cpufreq-bench
-	install -m 644 README $(DESTDIR)/$(docdir)/README
+	install -m 644 README-BENCH $(DESTDIR)/$(docdir)/README-BENCH
 	install -m 644 example.cfg $(DESTDIR)/$(confdir)/cpufreq-bench.conf
 
 clean:
