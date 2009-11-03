@@ -172,24 +172,26 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("starting benchmark with parameters:\n");
-	printf("config:\n\t"
-		"sleep=%li\n\t"
-		"load=%li\n\t"
-		"sleep_step=%li\n\t"
-		"load_step=%li\n\t"
-		"cpu=%u\n\t"
-		"cycles=%u\n\t"
-		"rounds=%u\n\t"
-		"governor=%s\n\n",
-		config->sleep,
-		config->load,
-		config->sleep_step,
-		config->load_step,
-		config->cpu,
-		config->cycles,
-		config->rounds,
-		config->governor);
+	if (config->verbose) {
+		printf("starting benchmark with parameters:\n");
+		printf("config:\n\t"
+		       "sleep=%li\n\t"
+		       "load=%li\n\t"
+		       "sleep_step=%li\n\t"
+		       "load_step=%li\n\t"
+		       "cpu=%u\n\t"
+		       "cycles=%u\n\t"
+		       "rounds=%u\n\t"
+		       "governor=%s\n\n",
+		       config->sleep,
+		       config->load,
+		       config->sleep_step,
+		       config->load_step,
+		       config->cpu,
+		       config->cycles,
+		       config->rounds,
+		       config->governor);
+	}
 
 	prepare_user(config);
 	prepare_system(config);

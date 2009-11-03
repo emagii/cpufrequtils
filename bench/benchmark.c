@@ -34,7 +34,7 @@
  * @retval rounds of calculation
  **/
 
-unsigned int calculate_timespace(long load)
+unsigned int calculate_timespace(long load, struct config *config)
 {
 	int i;
 	long long now, then;
@@ -42,7 +42,8 @@ unsigned int calculate_timespace(long load)
 	unsigned int rounds = 0;
 	unsigned int timed = 0;
 
-	printf("calibrating load of %lius, please wait...\n", load);
+	if (config->verbose)
+		printf("calibrating load of %lius, please wait...\n", load);
 
 	/* get the initial calculation time for a specific number of rounds */
 	now = get_time();
@@ -64,8 +65,8 @@ unsigned int calculate_timespace(long load)
 		timed = (unsigned int)(then - now);
 		estimated = rounds;
 	}
-
-	printf("calibration done\n");
+	if (config->verbose)
+		printf("calibration done\n");
 
 	return estimated;
 }
@@ -103,10 +104,12 @@ void start_benchmark(struct config *config)
 		/* calibrate the calculation time. the resulting calculation
 		 * _rounds should produce a load which matches the configured
 		 * load time */
-		calculations = calculate_timespace(load_time);
+		calculations = calculate_timespace(load_time, config);
 
-		printf("_round %i: doing %u cycles with %u calculations for %lius\n",
-			_round + 1, config->cycles, calculations, load_time);
+		if (config->verbose)
+			printf("_round %i: doing %u cycles with %u calculations"
+			       " for %lius\n", _round + 1, config->cycles,
+			       calculations, load_time);
 
 		fprintf(config->output, "%li %li %li %u ",
 					load_time, sleep_time, load_time / calculations, calculations);
@@ -149,6 +152,7 @@ void start_benchmark(struct config *config)
 		/* compare the avarage sleep/load cycles  */
 		fprintf(config->output, "%li ", powersave_time / config->cycles);
 		fprintf(config->output, "%.3f\n", performance_time * 100.0 / powersave_time);
+		fflush(config->output);
 
 		if (config->verbose)
 			printf("performance is at %.2f%%\n", performance_time * 100.0 / powersave_time);

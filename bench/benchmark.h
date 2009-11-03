@@ -24,5 +24,4 @@
 		}}							\
 
 
-unsigned int calculate_timespace(long load);
 void start_benchmark(struct config *config);

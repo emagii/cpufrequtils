@@ -147,15 +147,21 @@ void prepare_user(const struct config *config)
 		load_time += 2 * config->cycles * (config->load + config->load_step * round) + (config->load + config->load_step * round * 4);
 	}
 
-	printf("approx. test duration: %im\n", (int)((sleep_time + load_time) / 60000000));
-	printf("your terminal may hardly be responsible while the benchmark is running\n");
+	if (config->verbose) {
+		printf("approx. test duration: %im\n",
+		       (int)((sleep_time + load_time) / 60000000));
+		printf("your terminal may hardly be responsible while the "
+		       "benchmark is running\n");
+	}
 
 	for (i = 5; i >= 0; i--) {
-		printf("\rbenchmark starts in %is", i);
+		if (config->verbose)
+			printf("\rbenchmark starts in %is", i);
 		fflush(stdout);
 		sleep(1);
 	}
-	printf("\n");
+	if (config->verbose)
+		printf("\n");
 }
 
 /**

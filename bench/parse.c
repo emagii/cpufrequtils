@@ -22,7 +22,11 @@
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
+#include <dirent.h>
+
 #include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "parse.h"
 #include "config.h"
@@ -57,14 +61,25 @@ enum sched_prio string_to_prio(const char *str)
  * @retval NULL when the file can't be created
  **/
 
-FILE *prepare_output(const char *dir)
+FILE *prepare_output(const char *dirname)
 {
 	FILE *output = NULL;
 	int len;
 	char *filename;
 	struct utsname sysdata;
-	
-	len = strlen(dir) + 30;
+	DIR *dir;
+
+	dir = opendir(dirname);
+	if (dir == NULL) {
+		if (mkdir(dirname, 0755)) {
+			perror("mkdir");
+			fprintf(stderr, "error: Cannot create dir %s\n",
+				dirname);
+			return NULL;
+		}
+	}
+
+	len = strlen(dirname) + 30;
 	filename = malloc(sizeof(char) * len);
 
 	if (uname(&sysdata) == 0) {
@@ -77,9 +92,9 @@ FILE *prepare_output(const char *dir)
 		}
 
 		snprintf(filename, len - 1, "%s/benchmark_%s_%s_%li.log", 
-			dir, sysdata.nodename, sysdata.release, time(NULL));
+			dirname, sysdata.nodename, sysdata.release, time(NULL));
 	} else {
-		snprintf(filename, len -1, "%s/benchmark_%li.log", dir, time(NULL));
+		snprintf(filename, len -1, "%s/benchmark_%li.log", dirname, time(NULL));
 	}
 
 	dprintf("logilename: %s\n", filename);
@@ -118,11 +133,7 @@ struct config *prepare_default_config()
 	config->verbose = 0;
 	strncpy(config->governor, "ondemand", 8);
 
-	if ((config->output = prepare_output("/tmp")) == NULL) {
-		free(config);
-		return NULL;
-	}
-	
+	config->output = stdout;
 	return config;
 }
 
