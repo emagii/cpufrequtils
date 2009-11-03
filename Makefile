@@ -265,7 +265,7 @@ install-gmo:
 
 install-bench:
 	@#DESTDIR must be set from outside to survive
-	@sbindir=$(sbindir) docdir=$(docdir) confdir=$(confdir) make -C bench install
+	@sbindir=$(sbindir) bindir=$(bindir) docdir=$(docdir) confdir=$(confdir) make -C bench install
        
 install: install-lib install-tools install-man $(INSTALL_NLS) $(INSTALL_BENCH)
 
