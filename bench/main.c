@@ -80,9 +80,6 @@ int main(int argc, char **argv)
 	int option_index = 0;
 	struct config *config = NULL;
 
-	if (argc == 1)
-		usage();
-
 	config = prepare_default_config();
 
 	if (config == NULL)
