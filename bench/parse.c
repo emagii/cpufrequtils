@@ -104,8 +104,10 @@ FILE *prepare_output(const char *dirname)
 		fprintf(stderr, "error: unable to open logfile\n");
 	}
 
+	fprintf(stdout, "Logfile: %s\n", filename);
+
 	free(filename);
-	fprintf(output, "#load sleep avarage rounds performance powersave percentage\n");
+	fprintf(output, "#round load sleep performance powersave percentage\n");
 	return output;
 }
 

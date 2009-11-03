@@ -25,6 +25,14 @@
 #include "system.h"
 #include "benchmark.h"
 
+/* Print out progress if we log into a file */
+#define show_progress(total_time, progress_time)	\
+if (config->output != stdout) {				\
+	fprintf(stdout, "Progress: %02lu %%\r",		\
+		(progress_time * 100) / total_time);	\
+	fflush(stdout);					\
+}
+
 /**
  * compute how many rounds of calculation we should do
  * to get the given load time
@@ -88,13 +96,21 @@ void start_benchmark(struct config *config)
 	long sleep_time = 0, load_time = 0;
 	long performance_time = 0, powersave_time = 0;
 	unsigned int calculations;
+	unsigned long total_time = 0, progress_time = 0;
 
 	sleep_time = config->sleep;
 	load_time = config->load;
 
+	/* For the progress bar */
+	for (_round=1; _round <= config->rounds; _round++)
+		total_time += _round * (config->sleep + config->load);
+	total_time *= 2; /* powersave and performance cycles */
+
 	for (_round=0; _round < config->rounds; _round++) {
 		performance_time = 0LL;
 		powersave_time = 0LL;
+
+		show_progress(total_time, progress_time);
 
 		/* set the cpufreq governor to "performance" which disables
 		 * P-State switching. */
@@ -118,8 +134,7 @@ void start_benchmark(struct config *config)
 			printf("avarage: %lius, rps:%li\n", load_time / calculations, 1000000 * calculations / load_time);
 		}
 
-		/* do some sleep/load cycles and determine the avarege time we need
-		 * for one cycle */
+		/* do some sleep/load cycles with the performance governor */
 		for (cycle = 0; cycle < config->cycles; cycle++) {
 			now = get_time();
 			usleep(sleep_time);
@@ -131,6 +146,9 @@ void start_benchmark(struct config *config)
 					(long)(then - now), sleep_time, load_time, calculations);
 		}
 		fprintf(config->output, "%li ", performance_time / config->cycles);
+
+		progress_time += sleep_time + load_time;
+		show_progress(total_time, progress_time);
 
 		/* set the powersave governor which activates P-State switching
 		 * again */
@@ -148,6 +166,8 @@ void start_benchmark(struct config *config)
 				printf("powersave cycle took %lius, sleep: %lius, load: %lius, rounds: %u\n",
 					(long)(then - now), sleep_time, load_time, calculations);
 		}
+
+		progress_time += sleep_time + load_time;
 
 		/* compare the avarage sleep/load cycles  */
 		fprintf(config->output, "%li ", powersave_time / config->cycles);

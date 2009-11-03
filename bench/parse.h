@@ -37,6 +37,8 @@ struct config
 
 	unsigned int verbose;	/* verbose output */
 	FILE *output;		/* logfile */
+	char *output_filename;	/* logfile name, must be freed at the end
+				   if output != NULL and output != stdout*/
 };
 
 enum sched_prio string_to_prio(const char *str);

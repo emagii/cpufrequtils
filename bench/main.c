@@ -193,8 +193,10 @@ int main(int argc, char **argv)
 	prepare_system(config);
 	start_benchmark(config);
 
-	fclose (config->output);
-	free (config);
+	if (config->output != stdout)
+		fclose(config->output);
+
+	free(config);
 
 	return EXIT_SUCCESS;
 }
