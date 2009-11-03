@@ -1,7 +1,7 @@
 LIBS = -L../.libs/ -lm -lcpufreq
 
 OBJS = main.o parse.o system.o benchmark.o
-CFLAGS += -D_GNU_SOURCE
+CFLAGS += -D_GNU_SOURCE -I../lib
 
 ifeq ($(strip $(V)),false)
 	CC=@../build/ccdv gcc
