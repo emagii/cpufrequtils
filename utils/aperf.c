@@ -76,14 +76,15 @@ static unsigned int count_cpus(void)
 	unsigned int cpunr = 0;
 
 	fp = fopen("/proc/stat", "r");
-	if(!fp)
-		goto err_out;
+	if(!fp) {
+		printf("Couldn't count the number of CPUs (%s: %s), "
+			"assuming 1\n", "/proc/stat", strerror(errno));
+		return 1;
+	}
 
 	while (!feof(fp)) {
-		if (!fgets(value, LINE_LEN, fp)) {
-			fclose(fp);
-			goto err_out;
-		}
+		if (!fgets(value, LINE_LEN, fp))
+			continue;
 		value[LINE_LEN - 1] = '\0';
 		if (strlen(value) < (LINE_LEN - 2))
 			continue;
@@ -98,11 +99,6 @@ static unsigned int count_cpus(void)
 
 	/* cpu count starts from 0, on error return 1 (UP) */
 	return (ret+1);
-
-err_out:
-	printf("Couldn't count the number of CPUs (%s: %s), "
-		"assuming 1\n", "/proc/stat", strerror(errno));
-	return 1;
 }
 
 static int has_mperf_aperf_support(int cpu)
