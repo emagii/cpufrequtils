@@ -100,17 +100,7 @@ HOSTCC = gcc
 # set up PWD so that older versions of make will work with our build.
 PWD = $(shell pwd)
 
-export CROSS CC AR STRIP RANLIB CFLAGS LDFLAGS LIB_OBJS ARCH_LIB_OBJS CRT0
-
-# code taken from uClibc to determine the current arch
-ARCH := ${shell $(CC) -dumpmachine | sed -e s'/-.*//' -e 's/i.86/i386/' -e 's/sparc.*/sparc/' \
-	-e 's/arm.*/arm/g' -e 's/m68k.*/m68k/' -e 's/powerpc/ppc/g'}
-
-# code taken from uClibc to determine the gcc include dir
-GCCINCDIR := ${shell LC_ALL=C $(CC) -print-search-dirs | sed -ne "s/install: \(.*\)/\1include/gp"}
-
-# code taken from uClibc to determine the libgcc.a filename
-GCC_LIB := $(shell $(CC) -print-libgcc-file-name )
+export CROSS CC AR STRIP RANLIB CFLAGS LDFLAGS LIB_OBJS
 
 # use '-Os' optimization if available, else use -O2
 OPTIMIZATION := ${shell if $(CC) -Os -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
@@ -154,7 +144,7 @@ ifeq ($(strip $(CPUFRQ_BENCH)),true)
 	COMPILE_BENCH += compile-bench
 endif
 
-CFLAGS += $(WARNINGS) -I$(GCCINCDIR)
+CFLAGS += $(WARNINGS)
 
 ifeq ($(strip $(V)),false)
 	QUIET=@$(PWD)/build/ccdv
