@@ -202,7 +202,7 @@ libcpufreq: libcpufreq.la
 
 cpufreq-%: libcpufreq.la $(UTIL_OBJS)
 	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I. -I./lib/ -c -o utils/$@.o utils/$*.c
-	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I./lib/ -L. -L./.libs/ -lcpufreq -o $@ utils/$@.o
+	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I./lib/ -L. -L./.libs/ -o $@ utils/$@.o -lcpufreq
 	$(QUIET) $(STRIPCMD) $@
 
 utils: cpufreq-info cpufreq-set cpufreq-aperf
