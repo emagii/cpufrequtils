@@ -113,7 +113,7 @@ WARNINGS += $(call cc-supports,-Wno-pointer-sign)
 WARNINGS += $(call cc-supports,-Wdeclaration-after-statement)
 WARNINGS += -Wshadow
 
-CFLAGDEF := -DVERSION=\"$(VERSION)\"  -DPACKAGE=\"$(PACKAGE)\" \
+CPPFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\" \
 		-DPACKAGE_BUGREPORT=\"$(PACKAGE_BUGREPORT)\" -D_GNU_SOURCE
 
 UTIL_OBJS = 	utils/info.c utils/set.c
@@ -121,16 +121,16 @@ LIB_HEADERS = 	lib/cpufreq.h lib/interfaces.h
 LIB_OBJS = 	lib/cpufreq.c lib/proc.c lib/sysfs.c
 LIB_PARTS = 	lib/cpufreq.lo
 
-CFLAGDEF +=	-pipe
+CFLAGS +=	-pipe
 
 ifeq ($(strip $(PROC)),true)
 	LIB_PARTS += lib/proc.lo
-	CFLAGDEF += -DINTERFACE_PROC
+	CPPFLAGS += -DINTERFACE_PROC
 endif
 
 ifeq ($(strip $(SYSFS)),true)
 	LIB_PARTS += lib/sysfs.lo
-	CFLAGDEF += -DINTERFACE_SYSFS
+	CPPFLAGS += -DINTERFACE_SYSFS
 endif
 
 ifeq ($(strip $(NLS)),true)
@@ -157,10 +157,11 @@ endif
 
 # if DEBUG is enabled, then we do not strip or optimize
 ifeq ($(strip $(DEBUG)),true)
-	CFLAGDEF  += -O1 -g -DDEBUG
+	CFLAGS += -O1 -g
+	CPPFLAGS += -DDEBUG
 	STRIPCMD = /bin/true -Since_we_are_debugging
 else
-	CFLAGDEF  += $(OPTIMIZATION) -fomit-frame-pointer
+	CFLAGS += $(OPTIMIZATION) -fomit-frame-pointer
 	STRIPCMD = $(STRIP) -s --remove-section=.note --remove-section=.comment
 endif
 
@@ -177,21 +178,21 @@ build/ccdv: build/ccdv.c
 	@$(HOSTCC) -O1  -O1 $< -o $@
 
 %.lo: $(LIB_OBJS) $(LIB_HEADERS) ccdv
-	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=compile $(CC) $(CFLAGDEF) $(CFLAGS) -o $@ -c $*.c
+	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $*.c
 
 libcpufreq.la: $(LIB_OBJS) $(LIB_HEADERS) $(LIB_PARTS) Makefile
 	@if [ $(strip $(SYSFS)) != true -a $(strip $(PROC)) != true ]; then \
 		echo '*** At least one of /sys support or /proc support MUST be enabled ***'; \
 		exit -1; \
 	fi;
-	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=link $(CC) $(CFLAGDEF) $(CFLAGS) $(LDFLAGS) -o libcpufreq.la -rpath \
+	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o libcpufreq.la -rpath \
 		${libdir} -version-info $(LIB_VERSION) $(LIB_PARTS)
 
 libcpufreq: libcpufreq.la
 
 cpufreq-%: libcpufreq.la $(UTIL_OBJS)
-	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I. -I./lib/ -c -o utils/$@.o utils/$*.c
-	$(QUIET) $(CC) $(CFLAGDEF) $(CFLAGS) -g -I./lib/ -L. -L./.libs/ -o $@ utils/$@.o -lcpufreq
+	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -I. -I./lib/ -c -o utils/$@.o utils/$*.c
+	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) -L. -L./.libs/ -o $@ utils/$@.o -lcpufreq
 	$(QUIET) $(STRIPCMD) $@
 
 utils: cpufreq-info cpufreq-set cpufreq-aperf
