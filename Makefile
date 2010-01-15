@@ -102,12 +102,11 @@ PWD = $(shell pwd)
 
 export CROSS CC AR STRIP RANLIB CFLAGS LDFLAGS LIB_OBJS
 
-# use '-Os' optimization if available, else use -O2
-OPTIMIZATION := ${shell if $(CC) -Os -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
-		then echo "-Os"; else echo "-O2" ; fi}
-
 # check if compiler option is supported
 cc-supports = ${shell if $(CC) ${1} -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; fi;}
+
+# use '-Os' optimization if available, else use -O2
+OPTIMIZATION := $(call cc-supports,-Os,-O2)
 
 WARNINGS := -Wall -Wchar-subscripts -Wpointer-arith -Wsign-compare
 WARNINGS += $(call cc-supports,-Wno-pointer-sign)
