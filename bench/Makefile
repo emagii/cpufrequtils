@@ -1,4 +1,4 @@
-LIBS = -L../.libs/ -lm -lcpufreq
+LIBS = -L../ -lm -lcpufreq
 
 OBJS = main.o parse.o system.o benchmark.o
 CFLAGS += -D_GNU_SOURCE -I../lib -DDEFAULT_CONFIG_FILE=\"$(confdir)/cpufreq-bench.conf\"

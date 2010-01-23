@@ -55,7 +55,9 @@ DESTDIR ?=
 # and _should_ modify the PACKAGE_BUGREPORT definition
 
 VERSION =			007
-LIB_VERSION =			0:0:0
+LIB_MAJ=			0.0.0
+LIB_MIN=			0
+
 PACKAGE =			cpufrequtils
 PACKAGE_BUGREPORT =		cpufreq@vger.kernel.org
 LANGUAGES = 			de fr it cs pt
@@ -80,7 +82,6 @@ INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA  = ${INSTALL} -m 644
 INSTALL_SCRIPT = ${INSTALL_PROGRAM}
-LIBTOOL = /usr/bin/libtool
 
 # If you are running a cross compiler, you may want to set this
 # to something more interesting, like "arm-linux-".  If you want
@@ -116,20 +117,22 @@ WARNINGS += -Wshadow
 CPPFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\" \
 		-DPACKAGE_BUGREPORT=\"$(PACKAGE_BUGREPORT)\" -D_GNU_SOURCE
 
-UTIL_OBJS = 	utils/info.c utils/set.c
+UTIL_SRC = 	utils/info.c utils/set.c
 LIB_HEADERS = 	lib/cpufreq.h lib/interfaces.h
-LIB_OBJS = 	lib/cpufreq.c lib/proc.c lib/sysfs.c
-LIB_PARTS = 	lib/cpufreq.lo
+LIB_SRC = 	lib/cpufreq.c
+LIB_OBJS = 	lib/cpufreq.o
 
 CFLAGS +=	-pipe
 
 ifeq ($(strip $(PROC)),true)
-	LIB_PARTS += lib/proc.lo
+	LIB_OBJS += lib/proc.o
+	LIB_SRC += lib/proc.c
 	CPPFLAGS += -DINTERFACE_PROC
 endif
 
 ifeq ($(strip $(SYSFS)),true)
-	LIB_PARTS += lib/sysfs.lo
+	LIB_OBJS += lib/sysfs.o
+	LIB_SRC += lib/sysfs.c
 	CPPFLAGS += -DINTERFACE_SYSFS
 endif
 
@@ -147,11 +150,9 @@ CFLAGS += $(WARNINGS)
 
 ifeq ($(strip $(V)),false)
 	QUIET=@$(PWD)/build/ccdv
-	LIBTOOL_OPT=--silent
 	HOST_PROGS=build/ccdv
 else
 	QUIET=
-	LIBTOOL_OPT=
 	HOST_PROGS=
 endif
 
@@ -175,24 +176,26 @@ all: ccdv libcpufreq utils $(COMPILE_NLS) $(COMPILE_BENCH)
 ccdv: build/ccdv
 build/ccdv: build/ccdv.c
 	@echo "Building ccdv"
-	@$(HOSTCC) -O1  -O1 $< -o $@
+	@$(HOSTCC) -O1 $< -o $@
 
-%.lo: $(LIB_OBJS) $(LIB_HEADERS) ccdv
-	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $*.c
+lib/%.o: $(LIB_SRC) $(LIB_HEADERS) build/ccdv
+	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
 
-libcpufreq.la: $(LIB_OBJS) $(LIB_HEADERS) $(LIB_PARTS) Makefile
+libcpufreq.so.$(LIB_MAJ): $(LIB_OBJS)
 	@if [ $(strip $(SYSFS)) != true -a $(strip $(PROC)) != true ]; then \
 		echo '*** At least one of /sys support or /proc support MUST be enabled ***'; \
 		exit -1; \
 	fi;
-	$(QUIET) $(LIBTOOL) $(LIBTOOL_OPT) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o libcpufreq.la -rpath \
-		${libdir} -version-info $(LIB_VERSION) $(LIB_PARTS)
+	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
+		-Wl,-soname,libcpufreq.so.$(LIB_MIN) $(LIB_OBJS)
+	@ln -sf $@ libcpufreq.so
+	@ln -sf $@ libcpufreq.so.$(LIB_MIN)
 
-libcpufreq: libcpufreq.la
+libcpufreq: libcpufreq.so.$(LIB_MAJ)
 
-cpufreq-%: libcpufreq.la $(UTIL_OBJS)
+cpufreq-%: libcpufreq.so.$(LIB_MAJ) $(UTIL_OBJS)
 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -I. -I./lib/ -c -o utils/$@.o utils/$*.c
-	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) -L. -L./.libs/ -o $@ utils/$@.o -lcpufreq
+	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) -L. -o $@ utils/$@.o -lcpufreq
 	$(QUIET) $(STRIPCMD) $@
 
 utils: cpufreq-info cpufreq-set cpufreq-aperf
@@ -217,22 +220,21 @@ update-gmo: po/$(PACKAGE).pot
 	done;
 
 compile-bench: libcpufreq
-	@V=$(V) confdir=$(confdir) make -C bench
+	@V=$(V) confdir=$(confdir) $(MAKE) -C bench
 
 clean:
-	-find . \( -not -type d \) -and \( -name '*~' -o -name '*.[oas]' -o -name '*.l[oas]' \) -type f -print \
+	-find . \( -not -type d \) -and \( -name '*~' -o -name '*.[oas]' \) -type f -print \
 	 | xargs rm -f
-	-rm -rf lib/.libs
-	-rm -rf .libs
 	-rm -f cpufreq-info cpufreq-set cpufreq-aperf
+	-rm -f libcpufreq.so*
 	-rm -f build/ccdv
 	-rm -rf po/*.gmo po/*.pot
-	make -C bench clean
+	$(MAKE) -C bench clean
 
 
 install-lib:
 	$(INSTALL) -d $(DESTDIR)${libdir}
-	$(LIBTOOL) --mode=install $(INSTALL) libcpufreq.la $(DESTDIR)${libdir}/libcpufreq.la
+	$(INSTALL) libcpufreq.so* $(DESTDIR)${libdir}/
 	$(INSTALL) -d $(DESTDIR)${includedir}
 	$(INSTALL_DATA) lib/cpufreq.h $(DESTDIR)${includedir}/cpufreq.h
 
@@ -255,7 +257,7 @@ install-gmo:
 
 install-bench:
 	@#DESTDIR must be set from outside to survive
-	@sbindir=$(sbindir) bindir=$(bindir) docdir=$(docdir) confdir=$(confdir) make -C bench install
+	@sbindir=$(sbindir) bindir=$(bindir) docdir=$(docdir) confdir=$(confdir) $(MAKE) -C bench install
        
 install: install-lib install-tools install-man $(INSTALL_NLS) $(INSTALL_BENCH)
 
@@ -271,5 +273,5 @@ uninstall:
 		rm -f $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo; \
 	  done;
 
-.PHONY: all utils libcpufreq update-po update-gmo install-lib install-tools install-man install-gmo install uninstall \
+.PHONY: all utils libcpufreq ccdv update-po update-gmo install-lib install-tools install-man install-gmo install uninstall \
 	clean 
