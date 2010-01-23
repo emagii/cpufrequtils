@@ -78,6 +78,7 @@ confdir ?=      /etc/
 
 # Toolchain: what tools do we use, and what options do they need:
 
+CP = cp -fpR
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA  = ${INSTALL} -m 644
@@ -193,16 +194,16 @@ libcpufreq.so.$(LIB_MAJ): $(LIB_OBJS)
 
 libcpufreq: libcpufreq.so.$(LIB_MAJ)
 
-cpufreq-%: libcpufreq.so.$(LIB_MAJ) $(UTIL_OBJS)
+cpufreq-%: libcpufreq.so.$(LIB_MAJ) $(UTIL_SRC)
 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -I. -I./lib/ -c -o utils/$@.o utils/$*.c
 	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) -L. -o $@ utils/$@.o -lcpufreq
 	$(QUIET) $(STRIPCMD) $@
 
 utils: cpufreq-info cpufreq-set cpufreq-aperf
 
-po/$(PACKAGE).pot: $(UTIL_OBJS)
+po/$(PACKAGE).pot: $(UTIL_SRC)
 	@xgettext --default-domain=$(PACKAGE) --add-comments \
-		--keyword=_ --keyword=N_ $(UTIL_OBJS) && \
+		--keyword=_ --keyword=N_ $(UTIL_SRC) && \
 	test -f $(PACKAGE).po && \
 	mv -f $(PACKAGE).po po/$(PACKAGE).pot
 
@@ -234,7 +235,7 @@ clean:
 
 install-lib:
 	$(INSTALL) -d $(DESTDIR)${libdir}
-	$(INSTALL) libcpufreq.so* $(DESTDIR)${libdir}/
+	$(CP) libcpufreq.so* $(DESTDIR)${libdir}/
 	$(INSTALL) -d $(DESTDIR)${includedir}
 	$(INSTALL_DATA) lib/cpufreq.h $(DESTDIR)${includedir}/cpufreq.h
 
@@ -259,7 +260,7 @@ install-bench:
 	@#DESTDIR must be set from outside to survive
 	@sbindir=$(sbindir) bindir=$(bindir) docdir=$(docdir) confdir=$(confdir) $(MAKE) -C bench install
        
-install: install-lib install-tools install-man $(INSTALL_NLS) $(INSTALL_BENCH)
+install: all install-lib install-tools install-man $(INSTALL_NLS) $(INSTALL_BENCH)
 
 uninstall:
 	- rm -f $(DESTDIR)${libdir}/libcpufreq.*
