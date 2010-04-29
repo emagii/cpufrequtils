@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	ret = access(msr_path, F_OK);
+	ret = access(msr_path, R_OK);
 	if (ret < 0) {
 		fprintf(stderr, "Error reading %s, load/enable msr.ko\n", msr_path);
 		goto out;
