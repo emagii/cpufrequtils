@@ -54,6 +54,7 @@
 #include <string.h>
 
 #include "cpufreq.h"
+#include "cpuid.h"
 
 #define MSR_IA32_APERF 0x000000E8
 #define MSR_IA32_MPERF 0x000000E7
@@ -101,27 +102,13 @@ static unsigned int count_cpus(void)
 	return (ret+1);
 }
 
-static int has_mperf_aperf_support(int cpu)
+static int cpu_has_effective_freq()
 {
-	int fd;
-	char msr_file_name[64];
-	uint32_t words[4];
-	int support;
+	/* largest base level */
+	if (cpuid_eax(0) < 6)
+		return 0;
 
-	sprintf(msr_file_name, "/dev/cpu/%d/cpuid", cpu);
-	fd = open(msr_file_name, O_RDONLY);
-	if (fd < 0)
-		return -1;
-	if (lseek(fd, 6, SEEK_CUR) == -1)
-		goto err;
-	if (read(fd, words, 16) != 16)
-		goto err;
-	support = words[2] & 0x1;
-	close(fd);
-	return support;
- err:
-	close(fd);
-	return -1;
+	return cpuid_ecx(6) & 0x1;
 }
 
 /*
@@ -251,7 +238,7 @@ static int get_measure_start_info(unsigned int cpu,
 
 	cpu_info->is_valid = 0;
 		
-	ret = has_mperf_aperf_support(cpu);
+	ret = cpu_has_effective_freq();
 	if (ret < 0) {
 		fprintf(stderr, "Could not read cpuid, is the cpuid "
 			"driver loaded or compiled into the kernel?\n");
