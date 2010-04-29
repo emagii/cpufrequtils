@@ -59,8 +59,6 @@
 #define MSR_IA32_APERF 0x000000E8
 #define MSR_IA32_MPERF 0x000000E7
 
-#define LINE_LEN 10
-
 struct avg_perf_cpu_info
 {
 	unsigned long max_freq;
@@ -68,39 +66,6 @@ struct avg_perf_cpu_info
 	uint64_t saved_mperf;
 	uint32_t is_valid:1;
 };
-
-static unsigned int count_cpus(void)
-{
-	FILE *fp;
-	char value[LINE_LEN];
-	unsigned int ret = 0;
-	unsigned int cpunr = 0;
-
-	fp = fopen("/proc/stat", "r");
-	if(!fp) {
-		printf("Couldn't count the number of CPUs (%s: %s), "
-			"assuming 1\n", "/proc/stat", strerror(errno));
-		return 1;
-	}
-
-	while (!feof(fp)) {
-		if (!fgets(value, LINE_LEN, fp))
-			continue;
-		value[LINE_LEN - 1] = '\0';
-		if (strlen(value) < (LINE_LEN - 2))
-			continue;
-		if (strstr(value, "cpu "))
-			continue;
-		if (sscanf(value, "cpu%d ", &cpunr) != 1)
-			continue;
-		if (cpunr > ret)
-			ret = cpunr;
-	}
-	fclose(fp);
-
-	/* cpu count starts from 0, on error return 1 (UP) */
-	return (ret+1);
-}
 
 static int cpu_has_effective_freq()
 {
@@ -343,7 +308,7 @@ static int do_measure_all_cpus(int sleep_time, int once)
 	uint64_t current_aperf, current_mperf, mperf_diff, aperf_diff;
 	struct avg_perf_cpu_info *cpu_list;
 
-	cpus = count_cpus();
+	cpus = sysconf(_SC_NPROCESSORS_CONF);
 
 	cpu_list = (struct avg_perf_cpu_info*)
 		malloc(cpus * sizeof (struct avg_perf_cpu_info));
