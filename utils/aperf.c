@@ -31,8 +31,6 @@
  *
  * Possible ToDos/Enhancments:
  *
- *  - Use cpuid assmbler command to retrieve cpuid
- *    -No dependency to the cpuid driver
  *  - Refresh the screen when mulitple cpus are poked and display results
  *    on one screen
  *    -This would introduce a lot more complexity, not sure whether it's
@@ -219,11 +217,9 @@ static int get_measure_start_info(unsigned int cpu,
 	return 0;
 }
 
-static void print_cpu_stats(unsigned int cpu, unsigned long average,
-			    struct timeval c0_time, struct timeval cx_time,
-			    unsigned int c0_percent)
+static void print_cpu_stats(unsigned long average, struct timeval c0_time,
+			    struct timeval cx_time, unsigned int c0_percent)
 {
-	printf("%.3u\t", cpu);
 	printf("%.7lu\t\t\t", average);
 	printf("%.2lu sec %.3lu ms\t", c0_time.tv_sec, c0_time.tv_usec);
 	printf("%.2lu sec %.3lu ms\t", cx_time.tv_sec, cx_time.tv_usec);
@@ -255,9 +251,11 @@ static int do_measuring_on_cpu(int sleep_time, int once, int cpu)
 		if (!cpu_info.is_valid)
 			continue;
 
+		printf("%.3u\t", cpu);
+
 		ret = get_aperf_mperf(cpu, &current_aperf, &current_mperf);
 		if (ret < 0) {
-			printf("\t[offline]\n");
+			printf("[offline]\n");
 			continue;
 		}
 
@@ -272,8 +270,7 @@ static int do_measuring_on_cpu(int sleep_time, int once, int cpu)
 					   aperf_diff, mperf_diff);
 		cpu_info.saved_mperf = current_mperf;
 		cpu_info.saved_aperf = current_aperf;
-		print_cpu_stats(cpu, average, C0_time, CX_time,
-				c0_percent);
+		print_cpu_stats(average, C0_time, CX_time, c0_percent);
 
 		if (once) {
 			printf("\n");
@@ -320,11 +317,13 @@ static int do_measure_all_cpus(int sleep_time, int once)
 
 		for (cpu = 0; cpu < cpus; cpu++) {
 
+			printf("%.3u\t", cpu);
+
 			ret = get_aperf_mperf(cpu, &current_aperf,
 					      &current_mperf);
 
 			if ((ret < 0) || !cpu_list[cpu].is_valid) {
-				printf("\t[offline]\n");
+				printf("[offline]\n");
 				continue;
 			}
 
@@ -339,8 +338,7 @@ static int do_measure_all_cpus(int sleep_time, int once)
 						   aperf_diff, mperf_diff);
 			cpu_list[cpu].saved_mperf = current_mperf;
 			cpu_list[cpu].saved_aperf = current_aperf;
-			print_cpu_stats(cpu, average, C0_time, CX_time,
-					c0_percent);
+			print_cpu_stats(average, C0_time, CX_time, c0_percent);
 			printf("\n");
 		}
 		if (once)
