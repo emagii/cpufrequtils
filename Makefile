@@ -118,7 +118,7 @@ WARNINGS += -Wshadow
 CPPFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\" \
 		-DPACKAGE_BUGREPORT=\"$(PACKAGE_BUGREPORT)\" -D_GNU_SOURCE
 
-UTIL_SRC = 	utils/info.c utils/set.c
+UTIL_SRC = 	utils/info.c utils/set.c utils/aperf.c utils/cpuid.h
 LIB_HEADERS = 	lib/cpufreq.h lib/interfaces.h
 LIB_SRC = 	lib/cpufreq.c
 LIB_OBJS = 	lib/cpufreq.o
