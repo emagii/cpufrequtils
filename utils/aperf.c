@@ -118,7 +118,7 @@ static int get_aperf_mperf(unsigned int cpu, uint64_t *aperf, uint64_t *mperf)
 	retval = read_msr(cpu, MSR_IA32_APERF, (unsigned long long*)aperf);
 	if (retval < 0)
 		return retval;
-	
+
 	retval = read_msr(cpu, MSR_IA32_MPERF, (unsigned long long*)mperf);
 	if (retval < 0)
 		return retval;
@@ -202,35 +202,20 @@ static int get_measure_start_info(unsigned int cpu,
 	int ret;
 
 	cpu_info->is_valid = 0;
-		
-	ret = cpu_has_effective_freq();
-	if (ret < 0) {
-		fprintf(stderr, "Could not read cpuid, is the cpuid "
-			"driver loaded or compiled into the kernel?\n");
-		return ret;
-	} else if (ret == 0) {
-		fprintf(stderr, "CPU(s) do not support mperf/aperf MSR "
-			"registers\n");
-		return EXIT_FAILURE;
-	}
-	
-	if (cpufreq_get_hardware_limits(cpu, &min, &max)) {
-		fprintf(stderr, "Could not get max frequency (P0), a "
-			"cpufreq driver must be loaded?\n");
-		return EXIT_FAILURE;
-	} else
-		cpu_info->max_freq = max;
+
+	if (cpufreq_get_hardware_limits(cpu, &min, &max))
+		return -EINVAL;
+
+	cpu_info->max_freq = max;
 	
 	ret = get_aperf_mperf(cpu, &aperf, &mperf);
-	if (ret < 0) {
-		fprintf(stderr, "Could not read MSRs, is the msr driver loaded"
-			" or compiled into the kernel?\n");
-		return EXIT_FAILURE;
-	} else {
-		cpu_info->saved_aperf = aperf;
-		cpu_info->saved_mperf = mperf;
-	}
+	if (ret < 0)
+		return -EINVAL;
+
+	cpu_info->saved_aperf = aperf;
+	cpu_info->saved_mperf = mperf;
 	cpu_info->is_valid = 1;
+
 	return 0;
 }
 
@@ -244,7 +229,6 @@ static void print_cpu_stats(unsigned int cpu, unsigned long average,
 	printf("%.2lu sec %.3lu ms\t", cx_time.tv_sec, cx_time.tv_usec);
 	printf("%.2u", c0_percent);
 }
-
 
 static int do_measuring_on_cpu(int sleep_time, int once, int cpu)
 {
@@ -270,13 +254,16 @@ static int do_measuring_on_cpu(int sleep_time, int once, int cpu)
 
 		if (!cpu_info.is_valid)
 			continue;
-		
+
 		ret = get_aperf_mperf(cpu, &current_aperf, &current_mperf);
-		if (ret < 0)
-			return EXIT_FAILURE;
+		if (ret < 0) {
+			printf("\t[offline]\n");
+			continue;
+		}
+
 		mperf_diff = current_mperf - cpu_info.saved_mperf;
 		aperf_diff = current_aperf - cpu_info.saved_aperf;
-		
+
 		get_C_state_time(diff_time, mperf_diff,
 				 cpu_info.max_freq,
 				 &C0_time, &CX_time,
@@ -312,12 +299,12 @@ static int do_measure_all_cpus(int sleep_time, int once)
 
 	cpu_list = (struct avg_perf_cpu_info*)
 		malloc(cpus * sizeof (struct avg_perf_cpu_info));
-	
+
 	for (cpu = 0; cpu < cpus; cpu++) {
 		ret = get_measure_start_info(cpu, &cpu_list[cpu]);
-		if (ret)
-			return ret;
-	}	
+		if   (ret)
+		continue;
+	}
 
 	while(1) {
 		gettimeofday(&start_time, NULL);
@@ -332,13 +319,15 @@ static int do_measure_all_cpus(int sleep_time, int once)
 		       sizeof(struct timeval));
 
 		for (cpu = 0; cpu < cpus; cpu++) {
-			if (!cpu_list[cpu].is_valid)
-				continue;
 
 			ret = get_aperf_mperf(cpu, &current_aperf,
 					      &current_mperf);
-			if (ret < 0)
-				return EXIT_FAILURE;
+
+			if ((ret < 0) || !cpu_list[cpu].is_valid) {
+				printf("\t[offline]\n");
+				continue;
+			}
+
 			mperf_diff = current_mperf - cpu_list[cpu].saved_mperf;
 			aperf_diff = current_aperf - cpu_list[cpu].saved_aperf;
 
@@ -389,6 +378,8 @@ int main(int argc, char *argv[])
 {
 	int c, ret, cpu = -1;
 	int sleep_time = 1, once = 0;
+	const char *msr_path = "/dev/cpu/0/msr";
+
 	while ( (c = getopt_long(argc,argv,"c:ohi:",long_options,
 				 NULL)) != -1 ) {
 		switch ( c ) {
@@ -406,6 +397,18 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	if (!cpu_has_effective_freq()) {
+		fprintf(stderr, "CPU doesn't support APERF/MPERF!\n");
+		return EXIT_FAILURE;
+	}
+
+	ret = access(msr_path, F_OK);
+	if (ret < 0) {
+		fprintf(stderr, "Error reading %s, load/enable msr.ko\n", msr_path);
+		goto out;
+	}
+
 	printf("CPU\tAverage freq(KHz)\tTime in C0\tTime in"
 	       " Cx\tC0 percentage\n");
 
@@ -413,6 +416,8 @@ int main(int argc, char *argv[])
 		ret = do_measure_all_cpus(sleep_time, once);
 	else
 		ret = do_measuring_on_cpu(sleep_time, once, cpu);
-	return ret;		
+
+out:
+	return ret;
 }
 /******* Options parsing, main ********/
