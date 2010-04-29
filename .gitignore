@@ -1,4 +1,7 @@
 .libs
+libcpufreq.so
+libcpufreq.so.0
+libcpufreq.so.0.0.0
 build/ccdv
 cpufreq-info
 cpufreq-set
