@@ -46,6 +46,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <stdint.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -396,8 +397,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (getuid() != 0) {
+		fprintf(stderr, "You must be root\n");
+		return EXIT_FAILURE;
+	}
+
 	if (!cpu_has_effective_freq()) {
-		fprintf(stderr, "CPU doesn't support APERF/MPERF!\n");
+		fprintf(stderr, "CPU doesn't support APERF/MPERF\n");
 		return EXIT_FAILURE;
 	}
 
