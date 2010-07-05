@@ -54,7 +54,7 @@ DESTDIR ?=
 # Package-related definitions. Distributions can modify the version
 # and _should_ modify the PACKAGE_BUGREPORT definition
 
-VERSION =			007
+VERSION =			008
 LIB_MAJ=			0.0.0
 LIB_MIN=			0
 
