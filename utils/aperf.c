@@ -68,11 +68,15 @@ struct avg_perf_cpu_info
 
 static int cpu_has_effective_freq()
 {
+#if defined(__i386__) || defined(__x86_64__)
 	/* largest base level */
 	if (cpuid_eax(0) < 6)
 		return 0;
 
 	return cpuid_ecx(6) & 0x1;
+#else
+	return 0;
+#endif
 }
 
 /*
