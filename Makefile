@@ -37,13 +37,6 @@ NLS ?=		true
 # cpufreq-bench benchmarking tool
 CPUFRQ_BENCH ?= false
 
-# Use the sysfs-based interface which is included in all 2.6 kernels
-# built with cpufreq support
-SYSFS ?=	true
-
-# Use the proc-based interface which is used in the 2.4 patch for cpufreq
-PROC ?=		true
-
 # Prefix to the directories we're installing to
 DESTDIR ?=	
 
@@ -119,23 +112,11 @@ CPPFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\" \
 		-DPACKAGE_BUGREPORT=\"$(PACKAGE_BUGREPORT)\" -D_GNU_SOURCE
 
 UTIL_SRC = 	utils/info.c utils/set.c utils/aperf.c utils/cpuid.h
-LIB_HEADERS = 	lib/cpufreq.h lib/interfaces.h
-LIB_SRC = 	lib/cpufreq.c
-LIB_OBJS = 	lib/cpufreq.o
+LIB_HEADERS = 	lib/cpufreq.h lib/sysfs.h
+LIB_SRC = 	lib/cpufreq.c lib/sysfs.c
+LIB_OBJS = 	lib/cpufreq.o lib/sysfs.o
 
 CFLAGS +=	-pipe
-
-ifeq ($(strip $(PROC)),true)
-	LIB_OBJS += lib/proc.o
-	LIB_SRC += lib/proc.c
-	CPPFLAGS += -DINTERFACE_PROC
-endif
-
-ifeq ($(strip $(SYSFS)),true)
-	LIB_OBJS += lib/sysfs.o
-	LIB_SRC += lib/sysfs.c
-	CPPFLAGS += -DINTERFACE_SYSFS
-endif
 
 ifeq ($(strip $(NLS)),true)
 	INSTALL_NLS += install-gmo
@@ -183,10 +164,6 @@ lib/%.o: $(LIB_SRC) $(LIB_HEADERS) build/ccdv
 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
 
 libcpufreq.so.$(LIB_MAJ): $(LIB_OBJS)
-	@if [ $(strip $(SYSFS)) != true -a $(strip $(PROC)) != true ]; then \
-		echo '*** At least one of /sys support or /proc support MUST be enabled ***'; \
-		exit -1; \
-	fi;
 	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
 		-Wl,-soname,libcpufreq.so.$(LIB_MIN) $(LIB_OBJS)
 	@ln -sf $@ libcpufreq.so
