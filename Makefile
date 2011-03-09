@@ -53,7 +53,7 @@ LIB_MIN=			0
 
 PACKAGE =			cpufrequtils
 PACKAGE_BUGREPORT =		cpufreq@vger.kernel.org
-LANGUAGES = 			de fr it cs pt
+LANGUAGES = 			de fr it cs pt ca
 
 
 # Directory definitions. These are default and most probably
