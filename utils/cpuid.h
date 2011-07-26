@@ -5,9 +5,21 @@ static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
 				unsigned int *ecx, unsigned int *edx)
 {
 	/* ecx is often an input as well as an output. */
-	asm volatile("cpuid"
+	asm volatile(
+#if defined(__i386__) && defined(__PIC__)
+	    "push %%ebx\n"
+	    "cpuid\n"
+	    "movl %%ebx, %1\n"
+	    "pop %%ebx\n"
+#else
+	    "cpuid\n"
+#endif
 	    : "=a" (*eax),
+#if defined(__i386__) && defined(__PIC__)
+	      "=r" (*ebx),
+#else
 	      "=b" (*ebx),
+#endif
 	      "=c" (*ecx),
 	      "=d" (*edx)
 	    : "0" (*eax), "2" (*ecx));
