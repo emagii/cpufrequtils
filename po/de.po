@@ -304,7 +304,7 @@ msgid ""
 "modified\n"
 msgstr ""
 "  -c CPU, --cpu CPU        Nummer der CPU, deren Taktfrequenz-Einstellung\n"
-"                           werden soll\n"
+"                           verändert werden soll\n"
 
 #: utils/set.c:39
 #, c-format
