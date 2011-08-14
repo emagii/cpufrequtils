@@ -121,6 +121,7 @@ CFLAGS +=	-pipe
 ifeq ($(strip $(NLS)),true)
 	INSTALL_NLS += install-gmo
 	COMPILE_NLS += update-gmo
+	CPPFLAGS += -DNLS
 endif
 
 ifeq ($(strip $(CPUFRQ_BENCH)),true)

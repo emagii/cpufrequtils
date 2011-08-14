@@ -12,16 +12,24 @@
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
-#include <libintl.h>
 #include <locale.h>
 
 #include <getopt.h>
 
 #include "cpufreq.h"
 
+#ifdef NLS
+#include <libintl.h>
 #define _(String) gettext(String)
 #define gettext_noop(String) String
 #define N_(String) gettext_noop(String)
+#else
+#define gettext_noop(String) String
+#define _(String) gettext_noop (String)
+#define gettext(String) gettext_noop (String)
+#define N_(String) gettext_noop (String)
+#define textdomain(String)
+#endif
 
 #define NORM_FREQ_LEN 32
 
